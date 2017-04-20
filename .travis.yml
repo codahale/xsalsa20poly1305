@@ -4,15 +4,11 @@ language: java
 jdk:
 - openjdk8
 install:
-  - wget -c https://github.com/jedisct1/libsodium/releases/download/1.0.3/libsodium-1.0.3.tar.gz
-  - tar xzvf libsodium-1.0.3.tar.gz
-  - cd libsodium-1.0.3 && mkdir vendor
-  - ./configure --prefix=`pwd`/vendor --enable-minimal
-  - make && make install
-  - cd ../
+  - ./install-libsodium.sh
 script:
-  - export LD_LIBRARY_PATH="/home/travis/build/codahale/xsalsa20poly1305/libsodium-1.0.3/vendor/lib"
+  - export LD_LIBRARY_PATH="/home/travis/build/codahale/xsalsa20poly1305/libsodium/lib"
   - mvn -B verify
 cache:
   directories:
   - $HOME/.m2
+  - $HOME/libsodium
