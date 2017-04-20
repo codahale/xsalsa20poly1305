@@ -18,9 +18,9 @@ import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 import static org.quicktheories.quicktheories.generators.SourceDSL.integers;
 
-import com.codahale.xsalsa20poly1305.InvalidCiphertextException;
 import com.codahale.xsalsa20poly1305.SecretBox;
 import java.util.Arrays;
+import java.util.Optional;
 import org.junit.Test;
 
 public class SecretBoxTest {
@@ -30,13 +30,9 @@ public class SecretBoxTest {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
         .check((key, nonce, message) -> {
           final SecretBox box = new SecretBox(key);
-          final byte[] ciphertext = box.seal(nonce, message);
-          try {
-            final byte[] plaintext = box.open(nonce, ciphertext);
-            return Arrays.equals(message, plaintext);
-          } catch (InvalidCiphertextException e) {
-            return false;
-          }
+          return box.open(nonce, box.seal(nonce, message))
+                    .map(p -> Arrays.equals(p, message))
+                    .orElse(false);
         });
   }
 
@@ -46,12 +42,8 @@ public class SecretBoxTest {
         .assuming((keyA, nonce, message, keyB) -> !Arrays.equals(keyA, keyB))
         .check((keyA, nonce, message, keyB) -> {
           final byte[] ciphertext = new SecretBox(keyA).seal(nonce, message);
-          try {
-            new SecretBox(keyB).open(nonce, ciphertext);
-            return false;
-          } catch (InvalidCiphertextException e) {
-            return true;
-          }
+          final Optional<byte[]> plaintext = new SecretBox(keyB).open(nonce, ciphertext);
+          return !plaintext.isPresent();
         });
   }
 
@@ -60,34 +52,24 @@ public class SecretBoxTest {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096), byteArrays(24, 24))
         .check((key, nonceA, message, nonceB) -> {
           final SecretBox box = new SecretBox(key);
-          final byte[] ciphertext = box.seal(nonceA, message);
-          try {
-            box.open(nonceB, ciphertext);
-            return false;
-          } catch (InvalidCiphertextException e) {
-            return true;
-          }
+          return !box.open(nonceB, box.seal(nonceA, message)).isPresent();
         });
   }
 
   @Test
   public void badCiphertext() throws Exception {
-    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096), integers().allPositive())
+    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096),
+        integers().allPositive())
         .check((key, nonce, message, v) -> {
           final SecretBox box = new SecretBox(key);
           final byte[] ciphertext = box.seal(nonce, message);
-          try {
-            // flip a single random bit of plaintext
-            int mask = (1 << (v%8));
-            if (mask == 0) {
-              mask = 1;
-            }
-            ciphertext[v % ciphertext.length] ^= mask;
-            box.open(nonce, ciphertext);
-            return false;
-          } catch (InvalidCiphertextException e) {
-            return true;
+          // flip a single random bit of plaintext
+          int mask = (1 << (v % 8));
+          if (mask == 0) {
+            mask = 1;
           }
+          ciphertext[v % ciphertext.length] ^= mask;
+          return !box.open(nonce, ciphertext).isPresent();
         });
   }
 }

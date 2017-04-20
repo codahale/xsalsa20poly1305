@@ -17,7 +17,6 @@ package com.codahale.xsalsa20poly1305.tests;
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 
-import com.codahale.xsalsa20poly1305.InvalidCiphertextException;
 import com.codahale.xsalsa20poly1305.SimpleBox;
 import java.util.Arrays;
 import org.junit.Test;
@@ -29,26 +28,16 @@ public class SimpleBoxTest {
     qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
         .check((key, message) -> {
           final SimpleBox box = new SimpleBox(key);
-          final byte[] ciphertext = box.seal(message);
-          try {
-            final byte[] plaintext = box.open(ciphertext);
-            return Arrays.equals(plaintext, message);
-          } catch (InvalidCiphertextException e) {
-            return false;
-          }
+          return box.open(box.seal(message))
+                    .map(v -> Arrays.equals(v, message))
+                    .orElse(false);
         });
+
   }
 
   @Test
   public void shortMessage() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(1, 24))
-        .check((key, message) -> {
-          try {
-            new SimpleBox(key).open(message);
-            return false;
-          } catch (InvalidCiphertextException e) {
-            return true;
-          }
-        });
+        .check((key, message) -> !new SimpleBox(key).open(message).isPresent());
   }
 }

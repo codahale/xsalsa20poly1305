@@ -17,6 +17,7 @@ package com.codahale.xsalsa20poly1305;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -75,13 +76,14 @@ public class SecretBox {
   /**
    * Decrypt a ciphertext using the given key and nonce.
    *
-   * @param nonce a 24-byte nonce (cf. {@link Nonces#misuseResistant(byte[], byte[])}, {@link
-   * Nonces#random()})
+   * @param nonce a 24-byte nonce
    * @param ciphertext the encrypted message
-   * @return the original plaintext
-   * @throws InvalidCiphertextException if the ciphertext cannot be decrypted
+   * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
+   * ciphertext was modified, an empty {@link Optional}
+   * @see Nonces#misuseResistant(byte[], byte[])
+   * @see Nonces#random()
    */
-  public byte[] open(byte[] nonce, byte[] ciphertext) throws InvalidCiphertextException {
+  public Optional<byte[]> open(byte[] nonce, byte[] ciphertext) {
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
     final Poly1305 poly1305 = new Poly1305();
 
@@ -105,13 +107,12 @@ public class SecretBox {
 
     // compare macs
     if (!MessageDigest.isEqual(calculatedMAC, presentedMAC)) {
-      throw new InvalidCiphertextException();
+      return Optional.empty();
     }
 
     // decrypt ciphertext
     final byte[] plaintext = new byte[len];
     xsalsa20.processBytes(ciphertext, 16, plaintext.length, plaintext, 0);
-    return plaintext;
+    return Optional.of(plaintext);
   }
-
 }
