@@ -6,7 +6,7 @@ jdk:
 install:
   - ./install-libsodium.sh
 script:
-  - export LD_LIBRARY_PATH="/home/travis/build/codahale/xsalsa20poly1305/libsodium/lib"
+  - export LD_LIBRARY_PATH=$HOME/libsodium/lib:$LD_LIBRARY_PATH
   - mvn -B verify
 cache:
   directories:
