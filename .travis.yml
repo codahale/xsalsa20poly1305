@@ -1,11 +1,19 @@
-sudo: required
+dist: trusty
+sudo: false
 language: java
 jdk:
-- oraclejdk8
+- openjdk8
 install:
-  - wget https://b25518159d104e8997f8-d5f47ab458856b6ee0c2780ddf5e291c.ssl.cf5.rackcdn.com/libsodium-1.0.11_amd64.deb
-  - sudo dpkg -i libsodium-1.0.11_amd64.deb
-script: mvn -B verify
+  - wget -c https://github.com/jedisct1/libsodium/releases/download/1.0.3/libsodium-1.0.3.tar.gz
+  - tar xzvf libsodium-1.0.3.tar.gz
+  - cd libsodium-1.0.3 && mkdir vendor
+  - ./configure --prefix=`pwd`/vendor
+  - make && make install
+  - cd ../
+script:
+  - export LD_LIBRARY_PATH="/home/travis/build/codahale/xsalsa20poly1305/libsodium-1.0.3/vendor/lib"
+  - mvn -B verify
+  - mvn clean install
 cache:
   directories:
   - $HOME/.m2
