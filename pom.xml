@@ -13,7 +13,9 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.codahale</groupId>
@@ -34,7 +36,8 @@
   </licenses>
   <scm>
     <connection>scm:git:https://github.com/codahale/xsalsa20poly1305.git</connection>
-    <developerConnection>scm:git:https://github.com/codahale/xsalsa20poly1305.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/codahale/xsalsa20poly1305.git
+    </developerConnection>
     <url>https://github.com/codahale/xsalsa20poly1305</url>
     <tag>HEAD</tag>
   </scm>
@@ -247,7 +250,7 @@
             <id>enforce</id>
             <configuration>
               <rules>
-                <dependencyConvergence />
+                <dependencyConvergence/>
               </rules>
             </configuration>
             <goals>

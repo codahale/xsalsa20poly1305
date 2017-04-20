@@ -35,7 +35,7 @@ public class NoncesTest {
                                          .collect(Collectors.toList());
     qt().forAll(integers().between(1, 1000), integers().between(1, 1000))
         .assuming((x, y) -> !Objects.equals(x, y))
-        .check((x, y) -> !Arrays.equals(nonces.get(x-1), nonces.get(y-1)));
+        .check((x, y) -> !Arrays.equals(nonces.get(x - 1), nonces.get(y - 1)));
     qt().forAll(integers().all())
         .check(i -> Nonces.random().length == 24);
   }
