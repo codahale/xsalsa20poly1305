@@ -13,7 +13,6 @@ install:
 script:
   - export LD_LIBRARY_PATH="/home/travis/build/codahale/xsalsa20poly1305/libsodium-1.0.3/vendor/lib"
   - mvn -B verify
-  - mvn clean install
 cache:
   directories:
   - $HOME/.m2
