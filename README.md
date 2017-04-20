@@ -21,31 +21,41 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 ```java
 import com.codahale.xsalsa20poly1305.SecretBox;
 import com.codahale.xsalsa20poly1305.SimpleBox;
+import java.util.Optional;
 
 class Example {
-    // if you don't want to manage nonces yourself
-    void simpleRoundTrip() {
-        final byte[] key = "ayellowsubmarineayellowsubmarine".getBytes();
-        final SimpleBox box = new SimpleBox(key);
+  // if you don't want to manage nonces yourself
+  void simpleRoundTrip() {
+    final byte[] key = "ayellowsubmarineayellowsubmarine".getBytes();
+    final SimpleBox box = new SimpleBox(key);
         
-        final byte[] message = "hello, it's me".getBytes();
-        final byte[] ciphertext = box.seal(key, message);
-        final byte[] plaintext = box.open(key, ciphertext);
-        
-        System.out.println(new String(plaintext));
+    final byte[] message = "hello, it's me".getBytes();
+    final byte[] ciphertext = box.seal(key, message);
+    final Optional<byte[]> plaintext = box.open(key, ciphertext);
+  
+    if (plaintext.isPresent()) {
+      System.out.println(new String(plaintext.get()));
+    } else {
+      System.err.println("Unable to decrypt data"); 
     }
+  }
     
-    // if you do want to manage nonces
-    void complexRoundTrip() {
-        final byte[] key = "ayellowsubmarineayellowsubmarine".getBytes();
-        final SecretBox box = new SecretBox(key);
+  // if you do want to manage nonces
+  void complexRoundTrip() {
+    final byte[] key = "ayellowsubmarineayellowsubmarine".getBytes();
+    final SecretBox box = new SecretBox(key);
         
-        final byte[] message = "hello, it's me".getBytes();
-        final byte[] nonce = SecretBox.misuseResistantNonce(key, message);
-        final byte[] ciphertext = box.seal(key, nonce, message);
-        final byte[] plaintext = box.open(key, nonce, ciphertext);
-        System.out.println(new String(plaintext));
+    final byte[] message = "hello, it's me".getBytes();
+    final byte[] nonce = SecretBox.misuseResistantNonce(key, message);
+    final byte[] ciphertext = box.seal(key, nonce, message);
+    final Optional<byte[]> plaintext = box.open(key, nonce, ciphertext);
+    
+    if (plaintext.isPresent()) {
+      System.out.println(new String(plaintext.get()));
+    } else {
+      System.err.println("Unable to decrypt data"); 
     }
+  }
 }
 ```
 ## Misuse-Resistant Nonces
