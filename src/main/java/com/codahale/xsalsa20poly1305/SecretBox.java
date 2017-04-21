@@ -15,10 +15,12 @@
 package com.codahale.xsalsa20poly1305;
 
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import org.bouncycastle.crypto.digests.Blake2bDigest;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -32,7 +34,8 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 @Immutable
 public class SecretBox {
 
-  final byte[] key;
+  static final int NONCE_SIZE = 24;
+  private final byte[] key;
 
   /**
    * Creates a new {@link SecretBox} instance with the given key.
@@ -49,8 +52,8 @@ public class SecretBox {
   /**
    * Encrypt a plaintext using the given key and nonce.
    *
-   * @param nonce a 24-byte nonce (cf. {@link Nonces#misuseResistant(byte[], byte[])}, {@link
-   * Nonces#random()})
+   * @param nonce a 24-byte nonce (cf. {@link #misuseResistantNonce(byte[])}, {@link
+   * #randomNonce()})
    * @param plaintext an arbitrary message
    * @return the ciphertext
    */
@@ -82,8 +85,8 @@ public class SecretBox {
    * @param ciphertext the encrypted message
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
    * ciphertext was modified, an empty {@link Optional}
-   * @see Nonces#misuseResistant(byte[], byte[])
-   * @see Nonces#random()
+   * @see #misuseResistantNonce(byte[])
+   * @see #randomNonce()
    */
   public Optional<byte[]> open(@Nonnull byte[] nonce, @Nonnull byte[] ciphertext) {
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
@@ -116,5 +119,55 @@ public class SecretBox {
     final byte[] plaintext = new byte[len];
     xsalsa20.processBytes(ciphertext, 16, plaintext.length, plaintext, 0);
     return Optional.of(plaintext);
+  }
+
+  /**
+   * Generates a random nonce.
+   * <p>
+   * <b>N.B.:</b> Use of this method is probably fine, but because an entropy-exhausted or
+   * compromised {@link SecureRandom} provider might generate duplicate nonces (which would allow an
+   * attacker to potentially decrypt and even forge messages), {@link #misuseResistantNonce(byte[])}
+   * is recommended instead.
+   *
+   * @return a 24-byte nonce
+   */
+  public byte[] randomNonce() {
+    final byte[] nonce = new byte[NONCE_SIZE];
+    final SecureRandom random = new SecureRandom();
+    random.nextBytes(nonce);
+    return nonce;
+  }
+
+  /**
+   * Generates a random nonce which is guaranteed to be unique even if the process's PRNG is
+   * exhausted or compromised.
+   * <p>
+   * Internally, this creates a Blake2b instance with the given key, a random 16-byte salt, and a
+   * random 16-byte personalization tag. It then hashes the message and returns the resulting
+   * 24-byte digest as the nonce.
+   * <p>
+   * In the event of a broken or entropy-exhausted {@link SecureRandom} provider, the nonce is
+   * essentially equivalent to a synthetic IV and should be unique for any given key/message pair.
+   * The result will be deterministic, which will allow attackers to detect duplicate messages.
+   * <p>
+   * In the event of a compromised {@link SecureRandom} provider, the attacker would need a complete
+   * second-preimage attack against Blake2b in order to produce colliding nonces.
+   *
+   * @param message the message to be encrypted
+   * @return a 24-byte nonce
+   */
+  public byte[] misuseResistantNonce(byte[] message) {
+    final byte[] n1 = new byte[16];
+    final byte[] n2 = new byte[16];
+    final SecureRandom random = new SecureRandom();
+    random.nextBytes(n1);
+    random.nextBytes(n2);
+
+    final Blake2bDigest blake2b = new Blake2bDigest(key, NONCE_SIZE, n1, n2);
+    blake2b.update(message, message.length, 0);
+
+    final byte[] nonce = new byte[NONCE_SIZE];
+    blake2b.doFinal(nonce, 0);
+    return nonce;
   }
 }

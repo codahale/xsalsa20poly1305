@@ -44,7 +44,7 @@ public class SimpleBox {
    * @return the ciphertext
    */
   public byte[] seal(@Nonnull byte[] plaintext) {
-    final byte[] nonce = Nonces.misuseResistant(box.key, plaintext);
+    final byte[] nonce = box.misuseResistantNonce(plaintext);
     final byte[] ciphertext = box.seal(nonce, plaintext);
     final byte[] out = new byte[nonce.length + ciphertext.length];
     System.arraycopy(nonce, 0, out, 0, nonce.length);
@@ -60,7 +60,7 @@ public class SimpleBox {
    * ciphertext was modified, an empty {@link Optional}
    */
   public Optional<byte[]> open(@Nonnull byte[] ciphertext) {
-    final byte[] nonce = new byte[Nonces.NONCE_SIZE];
+    final byte[] nonce = new byte[SecretBox.NONCE_SIZE];
     final int len = Math.min(ciphertext.length, nonce.length);
     System.arraycopy(ciphertext, 0, nonce, 0, len);
     final byte[] out = new byte[Math.max(0, ciphertext.length - nonce.length)];
