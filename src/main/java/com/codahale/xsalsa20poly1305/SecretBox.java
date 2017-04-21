@@ -16,8 +16,9 @@ package com.codahale.xsalsa20poly1305;
 
 import java.security.MessageDigest;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -28,6 +29,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
  * <p>
  * Compatible with NaCl's SecretBox construction.
  */
+@Immutable
 public class SecretBox {
 
   final byte[] key;
@@ -37,8 +39,8 @@ public class SecretBox {
    *
    * @param key a 32-byte key
    */
-  public SecretBox(byte[] key) {
-    if (Objects.requireNonNull(key).length != 32) {
+  public SecretBox(@Nonnull byte[] key) {
+    if (key.length != 32) {
       throw new IllegalArgumentException("key must be 32 bytes long");
     }
     this.key = Arrays.copyOf(key, key.length);
@@ -52,7 +54,7 @@ public class SecretBox {
    * @param plaintext an arbitrary message
    * @return the ciphertext
    */
-  public byte[] seal(byte[] nonce, byte[] plaintext) {
+  public byte[] seal(@Nonnull byte[] nonce, @Nonnull byte[] plaintext) {
     // initialize XSalsa20
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
     xsalsa20.init(true, new ParametersWithIV(new KeyParameter(key), nonce));
@@ -83,7 +85,7 @@ public class SecretBox {
    * @see Nonces#misuseResistant(byte[], byte[])
    * @see Nonces#random()
    */
-  public Optional<byte[]> open(byte[] nonce, byte[] ciphertext) {
+  public Optional<byte[]> open(@Nonnull byte[] nonce, @Nonnull byte[] ciphertext) {
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
     final Poly1305 poly1305 = new Poly1305();
 

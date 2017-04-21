@@ -15,12 +15,15 @@
 package com.codahale.xsalsa20poly1305;
 
 import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Convenience functions for encryption without requiring nonce management.
  * <p>
  * Compatible with RbNaCl's SimpleBox construction, but generates misuse-resistant nonces.
  */
+@Immutable
 public class SimpleBox {
 
   private final SecretBox box;
@@ -30,7 +33,7 @@ public class SimpleBox {
    *
    * @param key a 32-byte key
    */
-  public SimpleBox(byte[] key) {
+  public SimpleBox(@Nonnull byte[] key) {
     this.box = new SecretBox(key);
   }
 
@@ -40,7 +43,7 @@ public class SimpleBox {
    * @param plaintext any arbitrary bytes
    * @return the ciphertext
    */
-  public byte[] seal(byte[] plaintext) {
+  public byte[] seal(@Nonnull byte[] plaintext) {
     final byte[] nonce = Nonces.misuseResistant(box.key, plaintext);
     final byte[] ciphertext = box.seal(nonce, plaintext);
     final byte[] out = new byte[nonce.length + ciphertext.length];
@@ -56,7 +59,7 @@ public class SimpleBox {
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
    * ciphertext was modified, an empty {@link Optional}
    */
-  public Optional<byte[]> open(byte[] ciphertext) {
+  public Optional<byte[]> open(@Nonnull byte[] ciphertext) {
     final byte[] nonce = new byte[Nonces.NONCE_SIZE];
     final int len = Math.min(ciphertext.length, nonce.length);
     System.arraycopy(ciphertext, 0, nonce, 0, len);
