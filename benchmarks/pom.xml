@@ -49,7 +49,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <our.version>0.5.0</our.version>
+    <our.version>0.6.0</our.version>
     <jmh.version>1.18</jmh.version>
     <uberjar.name>benchmarks</uberjar.name>
   </properties>
