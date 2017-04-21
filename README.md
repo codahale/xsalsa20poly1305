@@ -19,6 +19,7 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 ## Use the thing
 
 ```java
+import com.codahale.xsalsa20poly1305.Nonces;
 import com.codahale.xsalsa20poly1305.SecretBox;
 import com.codahale.xsalsa20poly1305.SimpleBox;
 import java.util.Optional;
@@ -46,7 +47,7 @@ class Example {
     final SecretBox box = new SecretBox(key);
         
     final byte[] message = "hello, it's me".getBytes();
-    final byte[] nonce = SecretBox.misuseResistantNonce(key, message);
+    final byte[] nonce = Nonces.misuseResistantNonce(key, message);
     final byte[] ciphertext = box.seal(key, nonce, message);
     final Optional<byte[]> plaintext = box.open(key, nonce, ciphertext);
     
