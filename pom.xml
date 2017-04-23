@@ -256,6 +256,9 @@
             </goals>
             <configuration>
               <failOnWarning>true</failOnWarning>
+              <ignoredDependencies>
+                <ignoredDependency>org.openjdk.jmh:jmh-generator-annprocess</ignoredDependency>
+              </ignoredDependencies>
             </configuration>
           </execution>
         </executions>
