@@ -25,6 +25,7 @@ import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.whispersystems.curve25519.Curve25519;
 
 /**
  * Encryption and decryption using XSalsa20Poly1305.
@@ -38,7 +39,7 @@ public class SecretBox {
   private final byte[] key;
 
   /**
-   * Creates a new {@link SecretBox} instance with the given key.
+   * Create a new {@link SecretBox} instance with the given key.
    *
    * @param key a 32-byte key
    */
@@ -47,6 +48,25 @@ public class SecretBox {
       throw new IllegalArgumentException("key must be 32 bytes long");
     }
     this.key = Arrays.copyOf(key, key.length);
+  }
+
+  /**
+   * Create a new {@link SecretBox} instance given a Curve25519 public key and a Curve25519 private
+   * key.
+   *
+   * @param publicKey a Curve25519 public key
+   * @param privateKey a Curve25519 private key
+   */
+  public SecretBox(@Nonnull byte[] publicKey, @Nonnull byte[] privateKey) {
+    this(sharedSecret(publicKey, privateKey));
+  }
+
+  private static byte[] sharedSecret(@Nonnull byte[] publicKey, @Nonnull byte[] privateKey) {
+    final byte[] s = Curve25519.getInstance(Curve25519.BEST)
+                               .calculateAgreement(publicKey, privateKey);
+    final byte[] k = new byte[32];
+    HSalsa20.hsalsa20(k, new byte[16], s, HSalsa20.SIGMA);
+    return k;
   }
 
   /**

@@ -15,6 +15,7 @@
 package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
+import static com.codahale.xsalsa20poly1305.tests.Generators.keyPairs;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 import static org.quicktheories.quicktheories.generators.SourceDSL.integers;
 
@@ -23,8 +24,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.abstractj.kalium.crypto.Box;
 import org.junit.Test;
 
 public class SecretBoxTest {
@@ -37,6 +40,18 @@ public class SecretBoxTest {
           return box.open(nonce, box.seal(nonce, message))
                     .map(p -> Arrays.equals(p, message))
                     .orElse(false);
+        });
+  }
+
+  @Test
+  public void pkRoundTrip() throws Exception {
+    qt().forAll(keyPairs(), keyPairs(), byteArrays(24, 24), byteArrays(1, 4096))
+        .check((pairA, pairB, nonce, message) -> {
+          final SecretBox boxA = new SecretBox(pairB.publicKey, pairA.privateKey);
+          final SecretBox boxB = new SecretBox(pairA.publicKey, pairB.privateKey);
+          return boxB.open(nonce, boxA.seal(nonce, message))
+                     .map(p -> Arrays.equals(p, message))
+                     .orElse(false);
         });
   }
 
@@ -95,5 +110,58 @@ public class SecretBoxTest {
     final SecretBox box = new SecretBox(new byte[32]);
     qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
         .check((key, message) -> box.misuseResistantNonce(message).length == 24);
+  }
+
+  @Test
+  public void fromUsToLibSodium() throws Exception {
+    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
+        .check((key, nonce, message) -> {
+          final byte[] c = new SecretBox(key).seal(nonce, message);
+          final org.abstractj.kalium.crypto.SecretBox theirBox =
+              new org.abstractj.kalium.crypto.SecretBox(key);
+          final Optional<byte[]> p = tryTo(() -> theirBox.decrypt(nonce, c));
+          return p.map(v -> Arrays.equals(v, message)).orElse(false);
+        });
+  }
+
+  @Test
+  public void fromLibSodiumToUs() throws Exception {
+    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
+        .check((key, nonce, message) -> {
+          final byte[] c = new org.abstractj.kalium.crypto.SecretBox(key).encrypt(nonce, message);
+          final Optional<byte[]> p = new SecretBox(key).open(nonce, c);
+          return p.map(v -> Arrays.equals(v, message)).orElse(false);
+        });
+  }
+
+  @Test
+  public void pkFromUsToLibSodium() throws Exception {
+    qt().forAll(keyPairs(), keyPairs(), byteArrays(24, 24), byteArrays(1, 4096))
+        .check((pairA, pairB, nonce, message) -> {
+          final SecretBox ourBox = new SecretBox(pairB.publicKey, pairA.privateKey);
+          final byte[] c = ourBox.seal(nonce, message);
+          final Box theirBox = new Box(pairA.publicKey, pairB.privateKey);
+          final Optional<byte[]> p = tryTo(() -> theirBox.decrypt(nonce, c));
+          return p.map(v -> Arrays.equals(v, message)).orElse(false);
+        });
+  }
+
+  @Test
+  public void pkFromLibSodiumToUs() throws Exception {
+    qt().forAll(keyPairs(), keyPairs(), byteArrays(24, 24), byteArrays(1, 4096))
+        .check((pairA, pairB, nonce, message) -> {
+          final Box theirBox = new Box(pairB.publicKey, pairA.privateKey);
+          final byte[] c = theirBox.encrypt(nonce, message);
+          final SecretBox ourBox = new SecretBox(pairA.publicKey, pairB.privateKey);
+          return ourBox.open(nonce, c).map(v -> Arrays.equals(v, message)).orElse(false);
+        });
+  }
+
+  private <T> Optional<T> tryTo(Supplier<T> f) {
+    try {
+      return Optional.ofNullable(f.get());
+    } catch (RuntimeException e) {
+      return Optional.empty();
+    }
   }
 }

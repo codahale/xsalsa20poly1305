@@ -38,6 +38,17 @@ public class SimpleBox {
   }
 
   /**
+   * Create a new {@link SecretBox} instance given a Curve25519 public key and a Curve25519 private
+   * key.
+   *
+   * @param publicKey a Curve25519 public key
+   * @param privateKey a Curve25519 private key
+   */
+  public SimpleBox(@Nonnull byte[] publicKey, @Nonnull byte[] privateKey) {
+    this.box = new SecretBox(publicKey, privateKey);
+  }
+
+  /**
    * Encrypt the plaintext with the given key.
    *
    * @param plaintext any arbitrary bytes

@@ -15,6 +15,7 @@
 package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
+import static com.codahale.xsalsa20poly1305.tests.Generators.keyPairs;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 
 import com.codahale.xsalsa20poly1305.SimpleBox;
@@ -32,7 +33,18 @@ public class SimpleBoxTest {
                     .map(v -> Arrays.equals(v, message))
                     .orElse(false);
         });
+  }
 
+  @Test
+  public void pkRoundTrip() throws Exception {
+    qt().forAll(keyPairs(), keyPairs(), byteArrays(1, 4096))
+        .check((pairA, pairB, message) -> {
+          final SimpleBox boxA = new SimpleBox(pairB.publicKey, pairA.privateKey);
+          final SimpleBox boxB = new SimpleBox(pairA.publicKey, pairB.privateKey);
+          return boxB.open(boxA.seal(message))
+                     .map(p -> Arrays.equals(p, message))
+                     .orElse(false);
+        });
   }
 
   @Test
