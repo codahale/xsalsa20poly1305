@@ -72,8 +72,8 @@ public class SecretBox {
   /**
    * Encrypt a plaintext using the given key and nonce.
    *
-   * @param nonce a 24-byte nonce (cf. {@link #misuseResistantNonce(byte[])}, {@link
-   * #randomNonce()})
+   * @param nonce a 24-byte nonce (cf. {@link #nonce(byte[])}, {@link
+   * #nonce()})
    * @param plaintext an arbitrary message
    * @return the ciphertext
    */
@@ -105,8 +105,8 @@ public class SecretBox {
    * @param ciphertext the encrypted message
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
    * ciphertext was modified, an empty {@link Optional}
-   * @see #misuseResistantNonce(byte[])
-   * @see #randomNonce()
+   * @see #nonce(byte[])
+   * @see #nonce()
    */
   public Optional<byte[]> open(@Nonnull byte[] nonce, @Nonnull byte[] ciphertext) {
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
@@ -146,12 +146,12 @@ public class SecretBox {
    * <p>
    * <b>N.B.:</b> Use of this method is probably fine, but because an entropy-exhausted or
    * compromised {@link SecureRandom} provider might generate duplicate nonces (which would allow an
-   * attacker to potentially decrypt and even forge messages), {@link #misuseResistantNonce(byte[])}
+   * attacker to potentially decrypt and even forge messages), {@link #nonce(byte[])}
    * is recommended instead.
    *
    * @return a 24-byte nonce
    */
-  public byte[] randomNonce() {
+  public byte[] nonce() {
     final byte[] nonce = new byte[NONCE_SIZE];
     final SecureRandom random = new SecureRandom();
     random.nextBytes(nonce);
@@ -176,7 +176,7 @@ public class SecretBox {
    * @param message the message to be encrypted
    * @return a 24-byte nonce
    */
-  public byte[] misuseResistantNonce(byte[] message) {
+  public byte[] nonce(byte[] message) {
     final byte[] n1 = new byte[16];
     final byte[] n2 = new byte[16];
     final SecureRandom random = new SecureRandom();

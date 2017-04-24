@@ -55,7 +55,7 @@ public class SimpleBox {
    * @return the ciphertext
    */
   public byte[] seal(@Nonnull byte[] plaintext) {
-    final byte[] nonce = box.misuseResistantNonce(plaintext);
+    final byte[] nonce = box.nonce(plaintext);
     final byte[] ciphertext = box.seal(nonce, plaintext);
     final byte[] out = new byte[nonce.length + ciphertext.length];
     System.arraycopy(nonce, 0, out, 0, nonce.length);

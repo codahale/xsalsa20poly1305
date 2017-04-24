@@ -96,20 +96,20 @@ public class SecretBoxTest {
   public void randomNonce() throws Exception {
     final SecretBox box = new SecretBox(new byte[32]);
     final List<byte[]> nonces = IntStream.range(0, 1000)
-                                         .mapToObj(i -> box.randomNonce())
+                                         .mapToObj(i -> box.nonce())
                                          .collect(Collectors.toList());
     qt().forAll(integers().between(1, 1000), integers().between(1, 1000))
         .assuming((x, y) -> !Objects.equals(x, y))
         .check((x, y) -> !Arrays.equals(nonces.get(x - 1), nonces.get(y - 1)));
     qt().forAll(integers().all())
-        .check(i -> box.randomNonce().length == 24);
+        .check(i -> box.nonce().length == 24);
   }
 
   @Test
   public void misuseResistantNonce() throws Exception {
     final SecretBox box = new SecretBox(new byte[32]);
     qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
-        .check((key, message) -> box.misuseResistantNonce(message).length == 24);
+        .check((key, message) -> box.nonce(message).length == 24);
   }
 
   @Test
