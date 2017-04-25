@@ -46,7 +46,7 @@ public class SecretBox {
    */
   public SecretBox(@Nonnull byte[] secretKey) {
     if (secretKey.length != 32) {
-      throw new IllegalArgumentException("key must be 32 bytes long");
+      throw new IllegalArgumentException("secretKey must be 32 bytes long");
     }
     this.key = Arrays.copyOf(secretKey, secretKey.length);
   }

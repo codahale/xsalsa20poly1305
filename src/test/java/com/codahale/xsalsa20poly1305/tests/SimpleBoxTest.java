@@ -16,7 +16,7 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.junit.Assert.assertArrayEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 
 import com.codahale.xsalsa20poly1305.SecretBox;
@@ -29,18 +29,18 @@ import org.junit.Test;
 public class SimpleBoxTest {
 
   @Test
-  @SuppressWarnings("ConstantConditions")
   public void generateSecretKey() throws Exception {
     final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
     final byte[] key = SimpleBox.generateSecretKey();
     final SimpleBox box = new SimpleBox(key);
     final byte[] c = box.seal(message);
     final Optional<byte[]> p = box.open(c);
-    assertArrayEquals(message, p.get());
+    assertThat(p)
+        .isNotEmpty()
+        .contains(message);
   }
 
   @Test
-  @SuppressWarnings("ConstantConditions")
   public void generateKeyPair() throws Exception {
     final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
     final byte[] privateKeyA = SimpleBox.generatePrivateKey();
@@ -51,7 +51,9 @@ public class SimpleBoxTest {
     final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
     final byte[] c = boxA.seal(message);
     final Optional<byte[]> p = boxB.open(c);
-    assertArrayEquals(message, p.get());
+    assertThat(p)
+        .isNotEmpty()
+        .contains(message);
   }
 
   @Test
