@@ -16,6 +16,9 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 </dependency>
 ```
 
+It depends on Bouncy Castle for Salsa20, XSalsa20, and Poly1305 implementations, and on Open Whisper
+Systems' curve25519-java for Curve25519 operations.
+
 ## Examples
 
 ```java
