@@ -2,8 +2,8 @@
 
 [![Build Status](https://secure.travis-ci.org/codahale/xsalsa20poly1305.svg)](http://travis-ci.org/codahale/xsalsa20poly1305)
 
-A pure Java implementation of XSalsa20Poly1305 authenticated encryption, compatible with DJB's NaCl
-`secretbox` construction. Includes a set of functions compatible with RbNaCl's SimpleBox
+A pure Java library which provides symmetric and asymmetric encryption compatible with DJB's NaCl
+library and its variants (e.g. libsodium). Also includes a class compatible with RbNaCl's SimpleBox
 construction, which automatically manages nonces for you in a misuse-resistant fashion.
 
 ## Add to your project
@@ -12,52 +12,68 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 <dependency>
   <groupId>com.codahale</groupId>
   <artifactId>xsalsa20poly1305</artifactId>
-  <version>0.6.0</version>
+  <version>0.7.0</version>
 </dependency>
 ```
 
-## Use the thing
+## Examples
 
 ```java
-import com.codahale.xsalsa20poly1305.SecretBox;
 import com.codahale.xsalsa20poly1305.SimpleBox;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
 
-class Example {
-  // if you don't want to manage nonces yourself
-  void simpleRoundTrip() {
-    final byte[] key = "ayellowsubmarineayellowsubmarine".getBytes();
-    final SimpleBox box = new SimpleBox(key);
-        
-    final byte[] message = "hello, it's me".getBytes();
-    final byte[] ciphertext = box.seal(key, message);
-    final Optional<byte[]> plaintext = box.open(key, ciphertext);
+class Examples {
+  void asymmetricEncryption() {
+    // Alice has a key pair
+    byte[] alicePrivateKey = SimpleBox.generatePrivateKey();
+    byte[] alicePublicKey = SimpleBox.generatePublicKey(alicePrivateKey);
+    
+    // Bob also has a key pair
+    byte[] bobPrivateKey = SimpleBox.generatePrivateKey();
+    byte[] bobPublicKey = SimpleBox.generatePublicKey(bobPrivateKey);
+    
+    // Bob and Alice exchange public keys. (Not pictured.)
+    
+    // Bob wants to send Alice a very secret message. 
+    byte[] message = "this is very secret".getBytes(StandardCharsets.UTF_8);
+    
+    // Bob encrypts the message using Alice's public key and his own private key
+    SimpleBox bobBox = new SimpleBox(alicePublicKey, bobPrivateKey);
+    byte[] ciphertext = bobBox.seal(message);
+    
+    // Bob sends Alice this ciphertext. (Not pictured.)
+    
+    // Alice decrypts the message using Bob's public key and her own private key.
+    SimpleBox aliceBox = new SimpleBox(bobPublicKey, alicePrivateKey);
+    byte[] plaintext = aliceBox.open(ciphertext);
+    
+    // Now Alice has the message!
+  }
+ 
+  void symmetricEncryption() {
+    // There is a single secret key.
+    byte[] secretKey = SimpleBox.generateSecretKey();  
+   
+    // And you want to use it to store a very secret message.
+    byte[] message = "this is very secret".getBytes(StandardCharsets.UTF_8);
+   
+    // So you encrypt it.
+    SimpleBox box = new SimpleBox(secretKey);
+    byte[] ciphertext = box.seal(message);
+    
+    // And you store it. (Not pictured.)
+    
+    // And then you decrypt it later.
+    byte[] plaintext = box.open(ciphertext);
+    
+    // Now you have the message again!
+  }
   
-    if (plaintext.isPresent()) {
-      System.out.println(new String(plaintext.get()));
-    } else {
-      System.err.println("Unable to decrypt data"); 
-    }
-  }
-    
-  // if you do want to manage nonces
-  void complexRoundTrip() {
-    final byte[] key = "ayellowsubmarineayellowsubmarine".getBytes();
-    final SecretBox box = new SecretBox(key);
-        
-    final byte[] message = "hello, it's me".getBytes();
-    final byte[] nonce = box.nonce(message);
-    final byte[] ciphertext = box.seal(key, nonce, message);
-    final Optional<byte[]> plaintext = box.open(key, nonce, ciphertext);
-    
-    if (plaintext.isPresent()) {
-      System.out.println(new String(plaintext.get()));
-    } else {
-      System.err.println("Unable to decrypt data"); 
-    }
-  }
+  // There is also SecretBox, which behaves much like SimpleBox but requires you to manage your own
+  // nonces. More on that later.
 }
 ```
+
 ## Misuse-Resistant Nonces
 
 XSalsa20Poly1305 is composed of two cryptographic primitives: XSalsa20, a stream cipher, and

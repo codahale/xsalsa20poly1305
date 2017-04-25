@@ -15,35 +15,63 @@
 package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
-import static com.codahale.xsalsa20poly1305.tests.Generators.keyPairs;
+import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
+import static org.junit.Assert.assertArrayEquals;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 
+import com.codahale.xsalsa20poly1305.SecretBox;
 import com.codahale.xsalsa20poly1305.SimpleBox;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Optional;
 import org.junit.Test;
 
 public class SimpleBoxTest {
+
+  @Test
+  @SuppressWarnings("ConstantConditions")
+  public void generateSecretKey() throws Exception {
+    final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
+    final byte[] key = SimpleBox.generateSecretKey();
+    final SimpleBox box = new SimpleBox(key);
+    final byte[] c = box.seal(message);
+    final Optional<byte[]> p = box.open(c);
+    assertArrayEquals(message, p.get());
+  }
+
+  @Test
+  @SuppressWarnings("ConstantConditions")
+  public void generateKeyPair() throws Exception {
+    final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
+    final byte[] privateKeyA = SimpleBox.generatePrivateKey();
+    final byte[] publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
+    final byte[] privateKeyB = SimpleBox.generatePrivateKey();
+    final byte[] publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
+    final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
+    final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
+    final byte[] c = boxA.seal(message);
+    final Optional<byte[]> p = boxB.open(c);
+    assertArrayEquals(message, p.get());
+  }
 
   @Test
   public void roundTrip() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
         .check((key, message) -> {
           final SimpleBox box = new SimpleBox(key);
-          return box.open(box.seal(message))
-                    .map(v -> Arrays.equals(v, message))
-                    .orElse(false);
+          return box.open(box.seal(message)).map(v -> Arrays.equals(v, message)).orElse(false);
         });
   }
 
   @Test
   public void pkRoundTrip() throws Exception {
-    qt().forAll(keyPairs(), keyPairs(), byteArrays(1, 4096))
-        .check((pairA, pairB, message) -> {
-          final SimpleBox boxA = new SimpleBox(pairB.publicKey, pairA.privateKey);
-          final SimpleBox boxB = new SimpleBox(pairA.publicKey, pairB.privateKey);
-          return boxB.open(boxA.seal(message))
-                     .map(p -> Arrays.equals(p, message))
-                     .orElse(false);
+    qt().forAll(privateKeys(), privateKeys(), byteArrays(1, 4096))
+        .check((privateKeyA, privateKeyB, message) -> {
+          final byte[] publicKeyA = SecretBox.generatePublicKey(privateKeyA);
+          final byte[] publicKeyB = SecretBox.generatePublicKey(privateKeyB);
+          final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
+          final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
+          return boxB.open(boxA.seal(message)).map(p -> Arrays.equals(p, message)).orElse(false);
         });
   }
 

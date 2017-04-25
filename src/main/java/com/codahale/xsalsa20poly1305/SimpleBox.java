@@ -29,12 +29,12 @@ public class SimpleBox {
   private final SecretBox box;
 
   /**
-   * Create a new {@link SimpleBox} instance with the given key.
+   * Create a new {@link SimpleBox} instance with the given secret key.
    *
-   * @param key a 32-byte key
+   * @param secretKey a 32-byte secret key
    */
-  public SimpleBox(@Nonnull byte[] key) {
-    this.box = new SecretBox(key);
+  public SimpleBox(@Nonnull byte[] secretKey) {
+    this.box = new SecretBox(secretKey);
   }
 
   /**
@@ -46,6 +46,34 @@ public class SimpleBox {
    */
   public SimpleBox(@Nonnull byte[] publicKey, @Nonnull byte[] privateKey) {
     this.box = new SecretBox(publicKey, privateKey);
+  }
+
+  /**
+   * Generates a 32-byte secret key.
+   *
+   * @return a 32-byte secret key
+   */
+  public static byte[] generateSecretKey() {
+    return SecretBox.generateSecretKey();
+  }
+
+  /**
+   * Generates a Curve25519 public key given a Curve25519 private key.
+   *
+   * @param privateKey a Curve25519 private key
+   * @return the public key matching {@code privateKey}
+   */
+  public static byte[] generatePublicKey(byte[] privateKey) {
+    return SecretBox.generatePublicKey(privateKey);
+  }
+
+  /**
+   * generates a Curve25519 private key.
+   *
+   * @return a Curve25519 private key
+   */
+  public static byte[] generatePrivateKey() {
+    return SecretBox.generatePrivateKey();
   }
 
   /**

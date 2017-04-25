@@ -26,6 +26,7 @@ import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.whispersystems.curve25519.Curve25519;
+import org.whispersystems.curve25519.java.curve_sigs;
 
 /**
  * Encryption and decryption using XSalsa20Poly1305.
@@ -39,15 +40,15 @@ public class SecretBox {
   private final byte[] key;
 
   /**
-   * Create a new {@link SecretBox} instance with the given key.
+   * Create a new {@link SecretBox} instance with the given secret key.
    *
-   * @param key a 32-byte key
+   * @param secetKey a 32-byte secret key
    */
-  public SecretBox(@Nonnull byte[] key) {
-    if (key.length != 32) {
+  public SecretBox(@Nonnull byte[] secetKey) {
+    if (secetKey.length != 32) {
       throw new IllegalArgumentException("key must be 32 bytes long");
     }
-    this.key = Arrays.copyOf(key, key.length);
+    this.key = Arrays.copyOf(secetKey, secetKey.length);
   }
 
   /**
@@ -70,10 +71,46 @@ public class SecretBox {
   }
 
   /**
+   * Generates a Curve25519 public key given a Curve25519 private key.
+   *
+   * @param privateKey a Curve25519 private key
+   * @return the public key matching {@code privateKey}
+   */
+  public static byte[] generatePublicKey(byte[] privateKey) {
+    final byte[] publicKey = new byte[32];
+    curve_sigs.curve25519_keygen(publicKey, privateKey);
+    return publicKey;
+  }
+
+  /**
+   * generates a Curve25519 private key.
+   *
+   * @return a Curve25519 private key
+   */
+  public static byte[] generatePrivateKey() {
+    final byte[] k = generateSecretKey();
+    k[0] &= 248;
+    k[31] &= 127;
+    k[31] |= 64;
+    return k;
+  }
+
+  /**
+   * Generates a 32-byte secret key.
+   *
+   * @return a 32-byte secret key
+   */
+  public static byte[] generateSecretKey() {
+    final byte[] k = new byte[32];
+    final SecureRandom random = new SecureRandom();
+    random.nextBytes(k);
+    return k;
+  }
+
+  /**
    * Encrypt a plaintext using the given key and nonce.
    *
-   * @param nonce a 24-byte nonce (cf. {@link #nonce(byte[])}, {@link
-   * #nonce()})
+   * @param nonce a 24-byte nonce (cf. {@link #nonce(byte[])}, {@link #nonce()})
    * @param plaintext an arbitrary message
    * @return the ciphertext
    */
