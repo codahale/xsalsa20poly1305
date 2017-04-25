@@ -13,35 +13,32 @@ interface HSalsa20 {
 
   byte[] SIGMA = "expand 32-byte k".getBytes(StandardCharsets.US_ASCII);
 
-  static void hsalsa20(byte[] out, byte[] in, byte[] k, byte[] c) {
+  static void hsalsa20(byte[] out, byte[] in, byte[] k) {
     final int[] x = new int[16];
 
-    x[0] = littleEndianToInt(c, 0);
+    x[0] = littleEndianToInt(HSalsa20.SIGMA, 0);
     x[1] = littleEndianToInt(k, 0);
     x[2] = littleEndianToInt(k, 4);
     x[3] = littleEndianToInt(k, 8);
     x[4] = littleEndianToInt(k, 12);
-    x[5] = littleEndianToInt(c, 4);
-
+    x[5] = littleEndianToInt(HSalsa20.SIGMA, 4);
     x[6] = littleEndianToInt(in, 0);
     x[7] = littleEndianToInt(in, 4);
     x[8] = littleEndianToInt(in, 8);
     x[9] = littleEndianToInt(in, 12);
-
-    x[10] = littleEndianToInt(c, 8);
+    x[10] = littleEndianToInt(HSalsa20.SIGMA, 8);
     x[11] = littleEndianToInt(k, 16);
     x[12] = littleEndianToInt(k, 20);
     x[13] = littleEndianToInt(k, 24);
     x[14] = littleEndianToInt(k, 28);
-    x[15] = littleEndianToInt(c, 12);
+    x[15] = littleEndianToInt(HSalsa20.SIGMA, 12);
 
     Salsa20Engine.salsaCore(20, x, x);
 
-    x[0] -= littleEndianToInt(c, 0);
-    x[5] -= littleEndianToInt(c, 4);
-    x[10] -= littleEndianToInt(c, 8);
-    x[15] -= littleEndianToInt(c, 12);
-
+    x[0] -= littleEndianToInt(HSalsa20.SIGMA, 0);
+    x[5] -= littleEndianToInt(HSalsa20.SIGMA, 4);
+    x[10] -= littleEndianToInt(HSalsa20.SIGMA, 8);
+    x[15] -= littleEndianToInt(HSalsa20.SIGMA, 12);
     x[6] -= littleEndianToInt(in, 0);
     x[7] -= littleEndianToInt(in, 4);
     x[8] -= littleEndianToInt(in, 8);

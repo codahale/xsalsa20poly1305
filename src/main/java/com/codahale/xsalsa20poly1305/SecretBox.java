@@ -42,13 +42,13 @@ public class SecretBox {
   /**
    * Create a new {@link SecretBox} instance with the given secret key.
    *
-   * @param secetKey a 32-byte secret key
+   * @param secretKey a 32-byte secret key
    */
-  public SecretBox(@Nonnull byte[] secetKey) {
-    if (secetKey.length != 32) {
+  public SecretBox(@Nonnull byte[] secretKey) {
+    if (secretKey.length != 32) {
       throw new IllegalArgumentException("key must be 32 bytes long");
     }
-    this.key = Arrays.copyOf(secetKey, secetKey.length);
+    this.key = Arrays.copyOf(secretKey, secretKey.length);
   }
 
   /**
@@ -66,7 +66,7 @@ public class SecretBox {
     final byte[] s = Curve25519.getInstance(Curve25519.BEST)
                                .calculateAgreement(publicKey, privateKey);
     final byte[] k = new byte[32];
-    HSalsa20.hsalsa20(k, new byte[16], s, HSalsa20.SIGMA);
+    HSalsa20.hsalsa20(k, new byte[16], s);
     return k;
   }
 

@@ -17,7 +17,7 @@ public class HSalsa20Test {
           final byte[] a = new byte[32];
           final byte[] b = new byte[32];
           hsalsa20.crypto_core(a, in, key, xsalsa20.sigma);
-          HSalsa20.hsalsa20(b, in, key, HSalsa20.SIGMA);
+          HSalsa20.hsalsa20(b, in, key);
           return Arrays.equals(a, b);
         });
   }
