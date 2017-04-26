@@ -24,12 +24,12 @@ import com.codahale.xsalsa20poly1305.SimpleBox;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SimpleBoxTest {
+class SimpleBoxTest {
 
   @Test
-  public void generateSecretKey() throws Exception {
+  void generateSecretKey() throws Exception {
     final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
     final byte[] key = SimpleBox.generateSecretKey();
     final SimpleBox box = new SimpleBox(key);
@@ -41,7 +41,7 @@ public class SimpleBoxTest {
   }
 
   @Test
-  public void generateKeyPair() throws Exception {
+  void generateKeyPair() throws Exception {
     final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
     final byte[] privateKeyA = SimpleBox.generatePrivateKey();
     final byte[] publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
@@ -57,7 +57,7 @@ public class SimpleBoxTest {
   }
 
   @Test
-  public void roundTrip() throws Exception {
+  void roundTrip() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
         .check((key, message) -> {
           final SimpleBox box = new SimpleBox(key);
@@ -66,7 +66,7 @@ public class SimpleBoxTest {
   }
 
   @Test
-  public void pkRoundTrip() throws Exception {
+  void pkRoundTrip() throws Exception {
     qt().forAll(privateKeys(), privateKeys(), byteArrays(1, 4096))
         .check((privateKeyA, privateKeyB, message) -> {
           final byte[] publicKeyA = SecretBox.generatePublicKey(privateKeyA);
@@ -78,7 +78,7 @@ public class SimpleBoxTest {
   }
 
   @Test
-  public void shortMessage() throws Exception {
+  void shortMessage() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(1, 24))
         .check((key, message) -> !new SimpleBox(key).open(message).isPresent());
   }

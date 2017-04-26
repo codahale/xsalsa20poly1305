@@ -6,12 +6,12 @@ import static org.quicktheories.quicktheories.QuickTheory.qt;
 import com.github.nitram509.jmacaroons.crypto.neilalexander.jnacl.hsalsa20;
 import com.github.nitram509.jmacaroons.crypto.neilalexander.jnacl.xsalsa20;
 import java.util.Arrays;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HSalsa20Test {
+class HSalsa20Test {
 
   @Test
-  public void interoperability() throws Exception {
+  void interoperability() throws Exception {
     qt().forAll(byteArrays(16, 16), byteArrays(32, 32))
         .check((in, key) -> {
           final byte[] a = new byte[32];

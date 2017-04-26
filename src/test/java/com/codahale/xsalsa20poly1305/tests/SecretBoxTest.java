@@ -31,19 +31,19 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.abstractj.kalium.crypto.Box;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SecretBoxTest {
+class SecretBoxTest {
 
   @Test
-  public void shortKey() throws Exception {
+  void shortKey() throws Exception {
     assertThatThrownBy(() -> new SecretBox(new byte[12]))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("secretKey must be 32 bytes long");
   }
 
   @Test
-  public void generateSecretKey() throws Exception {
+  void generateSecretKey() throws Exception {
     final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
     final byte[] key = SecretBox.generateSecretKey();
     final SecretBox box = new SecretBox(key);
@@ -56,7 +56,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void generateKeyPair() throws Exception {
+  void generateKeyPair() throws Exception {
     final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
     final byte[] privateKeyA = SecretBox.generatePrivateKey();
     final byte[] publicKeyA = SecretBox.generatePublicKey(privateKeyA);
@@ -73,7 +73,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void roundTrip() throws Exception {
+  void roundTrip() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
         .check((key, nonce, message) -> {
           final SecretBox box = new SecretBox(key);
@@ -84,7 +84,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void pkRoundTrip() throws Exception {
+  void pkRoundTrip() throws Exception {
     qt().forAll(privateKeys(), privateKeys(), byteArrays(24, 24), byteArrays(1, 4096))
         .check((privateKeyA, privateKeyB, nonce, message) -> {
           final byte[] publicKeyA = SecretBox.generatePublicKey(privateKeyA);
@@ -98,7 +98,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void badKey() throws Exception {
+  void badKey() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096), byteArrays(32, 32))
         .assuming((keyA, nonce, message, keyB) -> !Arrays.equals(keyA, keyB))
         .check((keyA, nonce, message, keyB) -> {
@@ -109,7 +109,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void badNonce() throws Exception {
+  void badNonce() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096), byteArrays(24, 24))
         .check((key, nonceA, message, nonceB) -> {
           final SecretBox box = new SecretBox(key);
@@ -118,7 +118,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void badCiphertext() throws Exception {
+  void badCiphertext() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096),
         integers().allPositive())
         .check((key, nonce, message, v) -> {
@@ -135,7 +135,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void randomNonce() throws Exception {
+  void randomNonce() throws Exception {
     final SecretBox box = new SecretBox(new byte[32]);
     final List<byte[]> nonces = IntStream.range(0, 1000)
                                          .mapToObj(i -> box.nonce())
@@ -148,14 +148,14 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void misuseResistantNonce() throws Exception {
+  void misuseResistantNonce() throws Exception {
     final SecretBox box = new SecretBox(new byte[32]);
     qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
         .check((key, message) -> box.nonce(message).length == 24);
   }
 
   @Test
-  public void fromUsToLibSodium() throws Exception {
+  void fromUsToLibSodium() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
         .check((key, nonce, message) -> {
           final byte[] c = new SecretBox(key).seal(nonce, message);
@@ -167,7 +167,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void fromLibSodiumToUs() throws Exception {
+  void fromLibSodiumToUs() throws Exception {
     qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
         .check((key, nonce, message) -> {
           final byte[] c = new org.abstractj.kalium.crypto.SecretBox(key).encrypt(nonce, message);
@@ -177,7 +177,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void pkFromUsToLibSodium() throws Exception {
+  void pkFromUsToLibSodium() throws Exception {
     qt().forAll(privateKeys(), privateKeys(), byteArrays(24, 24), byteArrays(1, 4096))
         .check((privateKeyA, privateKeyB, nonce, message) -> {
           final byte[] publicKeyA = SecretBox.generatePublicKey(privateKeyA);
@@ -191,7 +191,7 @@ public class SecretBoxTest {
   }
 
   @Test
-  public void pkFromLibSodiumToUs() throws Exception {
+  void pkFromLibSodiumToUs() throws Exception {
     qt().forAll(privateKeys(), privateKeys(), byteArrays(24, 24), byteArrays(1, 4096))
         .check((privateKeyA, privateKeyB, nonce, message) -> {
           final byte[] publicKeyA = SecretBox.generatePublicKey(privateKeyA);
