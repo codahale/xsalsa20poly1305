@@ -16,8 +16,8 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 import static org.quicktheories.quicktheories.generators.SourceDSL.integers;
 
@@ -37,9 +37,7 @@ class SecretBoxTest {
 
   @Test
   void shortKey() throws Exception {
-    assertThatThrownBy(() -> new SecretBox(new byte[12]))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("secretKey must be 32 bytes long");
+    assertThrows(IllegalArgumentException.class, () -> new SecretBox(new byte[12]));
   }
 
   @Test
@@ -50,9 +48,7 @@ class SecretBoxTest {
     final byte[] n = box.nonce(message);
     final byte[] c = box.seal(n, message);
     final Optional<byte[]> p = box.open(n, c);
-    assertThat(p)
-        .isNotEmpty()
-        .contains(message);
+    assertArrayEquals(message, p.orElse(new byte[0]));
   }
 
   @Test
@@ -67,9 +63,7 @@ class SecretBoxTest {
     final byte[] n = boxA.nonce(message);
     final byte[] c = boxA.seal(n, message);
     final Optional<byte[]> p = boxB.open(n, c);
-    assertThat(p)
-        .isNotEmpty()
-        .contains(message);
+    assertArrayEquals(message, p.orElse(new byte[0]));
   }
 
   @Test

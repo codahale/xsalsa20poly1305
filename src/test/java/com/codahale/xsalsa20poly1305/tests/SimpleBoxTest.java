@@ -16,7 +16,7 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.quicktheories.quicktheories.QuickTheory.qt;
 
 import com.codahale.xsalsa20poly1305.SecretBox;
@@ -35,9 +35,7 @@ class SimpleBoxTest {
     final SimpleBox box = new SimpleBox(key);
     final byte[] c = box.seal(message);
     final Optional<byte[]> p = box.open(c);
-    assertThat(p)
-        .isNotEmpty()
-        .contains(message);
+    assertArrayEquals(message, p.orElse(new byte[0]));
   }
 
   @Test
@@ -51,9 +49,7 @@ class SimpleBoxTest {
     final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
     final byte[] c = boxA.seal(message);
     final Optional<byte[]> p = boxB.open(c);
-    assertThat(p)
-        .isNotEmpty()
-        .contains(message);
+    assertArrayEquals(message, p.orElse(new byte[0]));
   }
 
   @Test
