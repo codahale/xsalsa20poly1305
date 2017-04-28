@@ -1,6 +1,10 @@
 # Change Log
 
-## 0.7.0: 2017-04-24
+## v0.8.0: 2017-04-28
+
+* Moved API to `ByteString`s.
+
+## v0.7.0: 2017-04-24
 
 * Added support for NaCl-compatible Curve25519 asymmetric encryption.
 * Added key generation methods.
