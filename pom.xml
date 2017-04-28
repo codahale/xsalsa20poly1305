@@ -18,7 +18,7 @@
 
   <groupId>com.codahale</groupId>
   <artifactId>xsalsa20poly1305</artifactId>
-  <version>0.8.0</version>
+  <version>0.8.1-SNAPSHOT</version>
   <name>xsalsa20poly1305</name>
   <url>https://github.com/codahale/xsalsa20poly1305</url>
   <description>
@@ -37,7 +37,7 @@
     <developerConnection>scm:git:https://github.com/codahale/xsalsa20poly1305.git
     </developerConnection>
     <url>https://github.com/codahale/xsalsa20poly1305</url>
-    <tag>v0.8.0</tag>
+    <tag>HEAD</tag>
   </scm>
   <developers>
     <developer>
