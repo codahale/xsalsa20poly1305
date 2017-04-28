@@ -17,6 +17,8 @@ package com.codahale.xsalsa20poly1305;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import okio.Buffer;
+import okio.ByteString;
 
 /**
  * Convenience functions for encryption without requiring nonce management.
@@ -33,7 +35,7 @@ public class SimpleBox {
    *
    * @param secretKey a 32-byte secret key
    */
-  public SimpleBox(@Nonnull byte[] secretKey) {
+  public SimpleBox(@Nonnull ByteString secretKey) {
     this.box = new SecretBox(secretKey);
   }
 
@@ -44,7 +46,7 @@ public class SimpleBox {
    * @param publicKey a Curve25519 public key
    * @param privateKey a Curve25519 private key
    */
-  public SimpleBox(@Nonnull byte[] publicKey, @Nonnull byte[] privateKey) {
+  public SimpleBox(@Nonnull ByteString publicKey, @Nonnull ByteString privateKey) {
     this.box = new SecretBox(publicKey, privateKey);
   }
 
@@ -53,7 +55,7 @@ public class SimpleBox {
    *
    * @return a 32-byte secret key
    */
-  public static byte[] generateSecretKey() {
+  public static ByteString generateSecretKey() {
     return SecretBox.generateSecretKey();
   }
 
@@ -63,7 +65,7 @@ public class SimpleBox {
    * @param privateKey a Curve25519 private key
    * @return the public key matching {@code privateKey}
    */
-  public static byte[] generatePublicKey(byte[] privateKey) {
+  public static ByteString generatePublicKey(ByteString privateKey) {
     return SecretBox.generatePublicKey(privateKey);
   }
 
@@ -72,7 +74,7 @@ public class SimpleBox {
    *
    * @return a Curve25519 private key
    */
-  public static byte[] generatePrivateKey() {
+  public static ByteString generatePrivateKey() {
     return SecretBox.generatePrivateKey();
   }
 
@@ -82,13 +84,13 @@ public class SimpleBox {
    * @param plaintext any arbitrary bytes
    * @return the ciphertext
    */
-  public byte[] seal(@Nonnull byte[] plaintext) {
-    final byte[] nonce = box.nonce(plaintext);
-    final byte[] ciphertext = box.seal(nonce, plaintext);
-    final byte[] out = new byte[nonce.length + ciphertext.length];
-    System.arraycopy(nonce, 0, out, 0, nonce.length);
-    System.arraycopy(ciphertext, 0, out, nonce.length, ciphertext.length);
-    return out;
+  public ByteString seal(@Nonnull ByteString plaintext) {
+    final ByteString nonce = box.nonce(plaintext);
+    final ByteString ciphertext = box.seal(nonce, plaintext);
+    final Buffer out = new Buffer();
+    out.write(nonce);
+    out.write(ciphertext);
+    return out.readByteString();
   }
 
   /**
@@ -98,12 +100,12 @@ public class SimpleBox {
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
    * ciphertext was modified, an empty {@link Optional}
    */
-  public Optional<byte[]> open(@Nonnull byte[] ciphertext) {
-    final byte[] nonce = new byte[SecretBox.NONCE_SIZE];
-    final int len = Math.min(ciphertext.length, nonce.length);
-    System.arraycopy(ciphertext, 0, nonce, 0, len);
-    final byte[] out = new byte[Math.max(0, ciphertext.length - nonce.length)];
-    System.arraycopy(ciphertext, len, out, 0, out.length);
-    return box.open(nonce, out);
+  public Optional<ByteString> open(@Nonnull ByteString ciphertext) {
+    if (ciphertext.size() < SecretBox.NONCE_SIZE) {
+      return Optional.empty();
+    }
+    final ByteString nonce = ciphertext.substring(0, SecretBox.NONCE_SIZE);
+    final ByteString x = ciphertext.substring(SecretBox.NONCE_SIZE, ciphertext.size());
+    return box.open(nonce, x);
   }
 }
