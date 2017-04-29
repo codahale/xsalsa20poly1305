@@ -108,19 +108,25 @@ Because of the catastrophic downside risk of nonce reuse, the `SimpleBox` functi
 
 ## Performance
 
-For small messages (i.e. ~100 bytes), it's about as fast as `libsodium`-based libraries like Kalium,
-but depends only on Bouncy Castle, which is pure Java. For larger messages (i.e., ~1KiB), Kalium is
-faster:
+For small messages (i.e. ~100 bytes), it's ony a little slower than `libsodium`-based libraries like
+Kalium. For larger messages (i.e., ~1KiB), Kalium is faster:
 
 ```
-Benchmark                      Mode  Cnt      Score      Error  Units
-KaliumBenchmarks.seal100Bytes  avgt  200   1035.706 ±   15.781  ns/op
-KaliumBenchmarks.seal1K        avgt  200   2783.802 ±   18.837  ns/op
-KaliumBenchmarks.seal10K       avgt  200  21238.330 ±  174.044  ns/op
-OurBenchmarks.seal100Bytes     avgt  200   1458.108 ±   13.039  ns/op
-OurBenchmarks.seal1K           avgt  200   8999.346 ±   81.191  ns/op
-OurBenchmarks.seal10K          avgt  200  83373.701 ± 1184.940  ns/op
+Benchmark                         Mode  Cnt       Score       Error  Units
+KaliumBenchmarks.seal100Bytes     avgt   20    1178.388 ±    38.086  ns/op
+KaliumBenchmarks.seal1K           avgt   20    3216.230 ±   138.257  ns/op
+KaliumBenchmarks.seal10K          avgt   20   25385.605 ±  2886.728  ns/op
+OurBenchmarks.seal100Bytes        avgt   20    1779.108 ±    93.737  ns/op
+OurBenchmarks.seal1K              avgt   20   12197.366 ±  1223.081  ns/op
+OurBenchmarks.seal10K             avgt   20  106457.090 ± 13920.695  ns/op
+OurBenchmarks.simpleSeal100Bytes  avgt   20    7525.965 ±  1541.868  ns/op
+OurBenchmarks.simpleSeal1K        avgt   20   16143.608 ±  1234.535  ns/op
+OurBenchmarks.simpleSeal10K       avgt   20  105926.511 ±  1814.883  ns/op
 ```
+
+(These benchmarks were run on my laptop while I was making jokes on Twitter. I would expect your
+production environment to be a little different.)
+
 ## License
 
 Copyright © 2017 Coda Hale
