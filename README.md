@@ -51,6 +51,7 @@ class Examples {
     final ByteString plaintext = aliceBox.open(ciphertext);
     
     // Now Alice has the message!
+    System.out.println(plaintext);
   }
  
   void symmetricEncryption() {
@@ -70,6 +71,7 @@ class Examples {
     final ByteString plaintext = box.open(ciphertext);
     
     // Now you have the message again!
+    System.out.println(plaintext);
   }
   
   // There is also SecretBox, which behaves much like SimpleBox but requires you to manage your own
