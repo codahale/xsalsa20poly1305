@@ -87,10 +87,7 @@ public class SimpleBox {
   public ByteString seal(@Nonnull ByteString plaintext) {
     final ByteString nonce = box.nonce(plaintext);
     final ByteString ciphertext = box.seal(nonce, plaintext);
-    final Buffer out = new Buffer();
-    out.write(nonce);
-    out.write(ciphertext);
-    return out.readByteString();
+    return new Buffer().write(nonce).write(ciphertext).readByteString();
   }
 
   /**
