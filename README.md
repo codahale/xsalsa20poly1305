@@ -28,46 +28,46 @@ import okio.ByteString;
 class Examples {
   void asymmetricEncryption() {
     // Alice has a key pair
-    ByteString alicePrivateKey = SimpleBox.generatePrivateKey();
-    ByteString alicePublicKey = SimpleBox.generatePublicKey(alicePrivateKey);
+    final ByteString alicePrivateKey = SimpleBox.generatePrivateKey();
+    final ByteString alicePublicKey = SimpleBox.generatePublicKey(alicePrivateKey);
     
     // Bob also has a key pair
-    ByteString bobPrivateKey = SimpleBox.generatePrivateKey();
-    ByteString bobPublicKey = SimpleBox.generatePublicKey(bobPrivateKey);
+    final ByteString bobPrivateKey = SimpleBox.generatePrivateKey();
+    final ByteString bobPublicKey = SimpleBox.generatePublicKey(bobPrivateKey);
     
     // Bob and Alice exchange public keys. (Not pictured.)
     
     // Bob wants to send Alice a very secret message. 
-    ByteString message = ByteString.encodeUtf8("this is very secret");
+    final ByteString message = ByteString.encodeUtf8("this is very secret");
     
     // Bob encrypts the message using Alice's public key and his own private key
-    SimpleBox bobBox = new SimpleBox(alicePublicKey, bobPrivateKey);
-    ByteString ciphertext = bobBox.seal(message);
+    final SimpleBox bobBox = new SimpleBox(alicePublicKey, bobPrivateKey);
+    final ByteString ciphertext = bobBox.seal(message);
     
     // Bob sends Alice this ciphertext. (Not pictured.)
     
     // Alice decrypts the message using Bob's public key and her own private key.
-    SimpleBox aliceBox = new SimpleBox(bobPublicKey, alicePrivateKey);
-    ByteString plaintext = aliceBox.open(ciphertext);
+    final SimpleBox aliceBox = new SimpleBox(bobPublicKey, alicePrivateKey);
+    final ByteString plaintext = aliceBox.open(ciphertext);
     
     // Now Alice has the message!
   }
  
   void symmetricEncryption() {
     // There is a single secret key.
-    ByteString secretKey = SimpleBox.generateSecretKey();  
+    final ByteString secretKey = SimpleBox.generateSecretKey();  
    
     // And you want to use it to store a very secret message.
-    ByteString message = "this is very secret".getBytes(StandardCharsets.UTF_8);
+    final ByteString message = ByteString.encodeUtf8("this is very secret");
    
     // So you encrypt it.
-    SimpleBox box = new SimpleBox(secretKey);
-    ByteString ciphertext = box.seal(message);
+    final SimpleBox box = new SimpleBox(secretKey);
+    final ByteString ciphertext = box.seal(message);
     
     // And you store it. (Not pictured.)
     
     // And then you decrypt it later.
-    ByteString plaintext = box.open(ciphertext);
+    final ByteString plaintext = box.open(ciphertext);
     
     // Now you have the message again!
   }
