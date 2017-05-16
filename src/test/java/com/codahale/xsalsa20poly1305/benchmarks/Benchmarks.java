@@ -4,7 +4,6 @@ import java.io.IOException;
 import org.openjdk.jmh.Main;
 import org.openjdk.jmh.runner.RunnerException;
 
-@SuppressWarnings("WeakerAccess")
 public class Benchmarks {
 
   public static void main(String[] args) throws IOException, RunnerException {

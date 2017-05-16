@@ -20,31 +20,39 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
 
-@SuppressWarnings("WeakerAccess")
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Benchmark)
 public class KaliumBenchmarks {
 
-  private static final byte[] key = new byte[32];
-  private static final SecretBox box = new SecretBox(key);
-  private static final byte[] nonce = new byte[24];
-  private static final byte[] msg100 = new byte[100];
-  private static final byte[] msg1K = new byte[1024];
-  private static final byte[] msg10K = new byte[10 * 1024];
+  @Param({"100", "1024", "10240"})
+  private int size = 100;
 
-  @Benchmark
-  public byte[] seal100Bytes() {
-    return box.encrypt(nonce, msg100);
+  private SecretBox box;
+  private byte[] nonce;
+  private byte[] plaintext;
+  private byte[] ciphertext;
+
+  @Setup
+  public void setup() {
+    this.box = new SecretBox(new byte[32]);
+    this.nonce = new byte[24];
+    this.plaintext = new byte[size];
+    this.ciphertext = box.encrypt(nonce, plaintext);
   }
 
   @Benchmark
-  public byte[] seal1K() {
-    return box.encrypt(nonce, msg1K);
+  public byte[] encrypt() {
+    return box.encrypt(nonce, plaintext);
   }
 
   @Benchmark
-  public byte[] seal10K() {
-    return box.encrypt(nonce, msg10K);
+  public byte[] decrypt() {
+    return box.decrypt(nonce, ciphertext);
   }
 }

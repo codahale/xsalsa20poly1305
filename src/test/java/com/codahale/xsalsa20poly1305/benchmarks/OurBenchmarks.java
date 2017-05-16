@@ -16,53 +16,60 @@ package com.codahale.xsalsa20poly1305.benchmarks;
 
 import com.codahale.xsalsa20poly1305.SecretBox;
 import com.codahale.xsalsa20poly1305.SimpleBox;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import okio.ByteString;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
 
-@SuppressWarnings("WeakerAccess")
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Benchmark)
 public class OurBenchmarks {
 
-  private static final ByteString key = ByteString.of(new byte[32]);
-  private static final SecretBox box = new SecretBox(key);
-  private static final SimpleBox simpleBox = new SimpleBox(key);
-  private static final ByteString nonce = ByteString.of(new byte[24]);
-  private static final ByteString msg100 = ByteString.of(new byte[100]);
-  private static final ByteString msg1K = ByteString.of(new byte[1024]);
-  private static final ByteString msg10K = ByteString.of(new byte[10 * 1024]);
+  @Param({"100", "1024", "10240"})
+  private int size = 100;
 
-  @Benchmark
-  public ByteString seal100Bytes() {
-    return box.seal(nonce, msg100);
+  private SecretBox box;
+  private SimpleBox simpleBox;
+  private ByteString nonce;
+  private ByteString plaintext;
+  private ByteString boxCiphertext;
+  private ByteString simpleCiphertext;
+
+  @Setup
+  public void setup() {
+    this.box = new SecretBox(ByteString.of(new byte[32]));
+    this.simpleBox = new SimpleBox(ByteString.of(new byte[32]));
+    this.nonce = ByteString.of(new byte[24]);
+    this.plaintext = ByteString.of(new byte[size]);
+    this.boxCiphertext = box.seal(nonce, plaintext);
+    this.simpleCiphertext = simpleBox.seal(plaintext);
   }
 
   @Benchmark
-  public ByteString seal1K() {
-    return box.seal(nonce, msg1K);
+  public ByteString seal() {
+    return box.seal(nonce, plaintext);
   }
 
   @Benchmark
-  public ByteString seal10K() {
-    return box.seal(nonce, msg10K);
+  public Optional<ByteString> open() {
+    return box.open(nonce, boxCiphertext);
   }
 
   @Benchmark
-  public ByteString simpleSeal100Bytes() {
-    return simpleBox.seal(msg100);
+  public ByteString simpleSeal() {
+    return simpleBox.seal(plaintext);
   }
 
   @Benchmark
-  public ByteString simpleSeal1K() {
-    return simpleBox.seal(msg1K);
-  }
-
-  @Benchmark
-  public ByteString simpleSeal10K() {
-    return simpleBox.seal(msg10K);
+  public Optional<ByteString> simpleOpen() {
+    return simpleBox.open(simpleCiphertext);
   }
 }
