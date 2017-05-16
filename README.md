@@ -110,20 +110,37 @@ Because of the catastrophic downside risk of nonce reuse, the `SimpleBox` functi
 
 ## Performance
 
-For small messages (i.e. ~100 bytes), it's ony a little slower than `libsodium`-based libraries like
+For small messages (i.e. ~100 bytes), it's only a little slower than `libsodium`-based libraries like
 Kalium. For larger messages (i.e., ~1KiB), Kalium is faster:
 
 ```
-Benchmark                         Mode  Cnt       Score       Error  Units
-KaliumBenchmarks.seal100Bytes     avgt   20    1178.388 ±    38.086  ns/op
-KaliumBenchmarks.seal1K           avgt   20    3216.230 ±   138.257  ns/op
-KaliumBenchmarks.seal10K          avgt   20   25385.605 ±  2886.728  ns/op
-OurBenchmarks.seal100Bytes        avgt   20    1779.108 ±    93.737  ns/op
-OurBenchmarks.seal1K              avgt   20   12197.366 ±  1223.081  ns/op
-OurBenchmarks.seal10K             avgt   20  106457.090 ± 13920.695  ns/op
-OurBenchmarks.simpleSeal100Bytes  avgt   20    7525.965 ±  1541.868  ns/op
-OurBenchmarks.simpleSeal1K        avgt   20   16143.608 ±  1234.535  ns/op
-OurBenchmarks.simpleSeal10K       avgt   20  105926.511 ±  1814.883  ns/op
+Benchmark                 (size)  Mode  Cnt      Score      Error  Units
+KaliumBenchmarks.encrypt     100  avgt   20   1069.459 ±   23.093  ns/op
+KaliumBenchmarks.decrypt     100  avgt   20   1437.068 ±   85.551  ns/op
+
+KaliumBenchmarks.encrypt    1024  avgt   20   3226.534 ±   52.449  ns/op
+KaliumBenchmarks.decrypt    1024  avgt   20   3718.079 ±  251.205  ns/op
+
+KaliumBenchmarks.encrypt   10240  avgt   20  23606.933 ±  609.937  ns/op
+KaliumBenchmarks.decrypt   10240  avgt   20  24179.750 ±  572.735  ns/op
+
+OurBenchmarks.seal           100  avgt   20   1664.803 ±   32.344  ns/op
+OurBenchmarks.open           100  avgt   20   1559.468 ±   23.389  ns/op
+
+OurBenchmarks.seal          1024  avgt   20  10147.395 ±  140.463  ns/op
+OurBenchmarks.open          1024  avgt   20   8715.979 ±  179.867  ns/op
+
+OurBenchmarks.open         10240  avgt   20  81910.397 ± 1425.562  ns/op
+OurBenchmarks.seal         10240  avgt   20  95930.340 ± 1995.765  ns/op
+
+OurBenchmarks.simpleSeal     100  avgt   20   5976.123 ±  129.270  ns/op
+OurBenchmarks.simpleOpen     100  avgt   20   1614.172 ±   26.352  ns/op
+
+OurBenchmarks.simpleSeal    1024  avgt   20  14675.347 ±  661.392  ns/op
+OurBenchmarks.simpleOpen    1024  avgt   20   8802.043 ±  190.319  ns/op
+
+OurBenchmarks.simpleSeal   10240  avgt   20  91625.154 ± 1917.489  ns/op
+OurBenchmarks.simpleOpen   10240  avgt   20  81568.890 ± 1333.978  ns/op
 ```
 
 (These benchmarks were run on my laptop while I was making jokes on Twitter. I would expect your
