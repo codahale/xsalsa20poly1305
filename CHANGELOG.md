@@ -1,5 +1,10 @@
 # Change Log
 
+## v0.8.1: 2017-05-15
+
+* Upgraded Bouncy Castle.
+* Upgraded okio.
+
 ## v0.8.0: 2017-04-28
 
 * Moved API to `ByteString`s.
