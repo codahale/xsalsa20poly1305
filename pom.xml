@@ -53,8 +53,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jmh.version>1.19</jmh.version>
-    <junit.jupiter.version>5.0.0-RC2</junit.jupiter.version>
-    <junit.platform.version>1.0.0-RC2</junit.platform.version>
+    <junit.jupiter.version>5.0.0-RC3</junit.jupiter.version>
+    <junit.platform.version>1.0.0-RC3</junit.platform.version>
   </properties>
 
   <dependencies>
@@ -66,7 +66,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.57</version>
+      <version>1.58</version>
     </dependency>
     <dependency>
       <groupId>org.whispersystems</groupId>
