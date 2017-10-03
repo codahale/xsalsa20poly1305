@@ -1,14 +1,14 @@
 package com.codahale.xsalsa20poly1305;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
-import static org.quicktheories.quicktheories.QuickTheory.qt;
 
 import com.github.nitram509.jmacaroons.crypto.neilalexander.jnacl.hsalsa20;
 import com.github.nitram509.jmacaroons.crypto.neilalexander.jnacl.xsalsa20;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
+import org.quicktheories.WithQuickTheories;
 
-class HSalsa20Test {
+class HSalsa20Test implements WithQuickTheories {
 
   @Test
   void interoperability() throws Exception {

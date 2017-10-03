@@ -18,8 +18,6 @@ import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.quicktheories.quicktheories.QuickTheory.qt;
-import static org.quicktheories.quicktheories.generators.SourceDSL.integers;
 
 import com.codahale.xsalsa20poly1305.SecretBox;
 import java.util.List;
@@ -32,8 +30,9 @@ import okio.ByteString;
 import org.abstractj.kalium.crypto.Box;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.junit.jupiter.api.Test;
+import org.quicktheories.WithQuickTheories;
 
-class SecretBoxTest {
+class SecretBoxTest implements WithQuickTheories {
 
   @Test
   void shortKey() throws Exception {
@@ -108,6 +107,7 @@ class SecretBoxTest {
   @Test
   void badNonce() throws Exception {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096), byteStrings(24, 24))
+        .assuming((key, nonceA, message, nonceB) -> !nonceA.equals(nonceB))
         .check((key, nonceA, message, nonceB) -> {
           final SecretBox box = new SecretBox(key);
           return !box.open(nonceB, box.seal(nonceA, message)).isPresent();

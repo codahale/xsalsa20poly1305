@@ -17,14 +17,14 @@ package com.codahale.xsalsa20poly1305.tests;
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.quicktheories.quicktheories.QuickTheory.qt;
 
 import com.codahale.xsalsa20poly1305.SimpleBox;
 import java.util.Optional;
 import okio.ByteString;
 import org.junit.jupiter.api.Test;
+import org.quicktheories.WithQuickTheories;
 
-class SimpleBoxTest {
+class SimpleBoxTest implements WithQuickTheories {
 
   @Test
   void generateSecretKey() throws Exception {

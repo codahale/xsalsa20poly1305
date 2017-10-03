@@ -15,27 +15,30 @@
 package com.codahale.xsalsa20poly1305.tests;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import okio.ByteString;
-import org.quicktheories.quicktheories.core.Source;
+import org.quicktheories.core.Gen;
+import org.quicktheories.impl.Constraint;
 
 public interface Generators {
 
-  static Source<byte[]> byteArrays(int minLength, int maxLength) {
-    return Source.of((prng, step) -> {
-      final byte[] bytes = new byte[prng.nextInt(minLength, maxLength)];
+  static Gen<byte[]> byteArrays(int minLength, int maxLength) {
+    final Gen<byte[]> gen = prng -> {
+      final byte[] bytes = new byte[(int) prng.next(Constraint.between(minLength, maxLength))];
       for (int i = 0; i < bytes.length; i++) {
-        bytes[i] = (byte) prng.nextInt(0, 255);
+        bytes[i] = (byte) prng.next(Constraint.between(0, 255));
       }
       return bytes;
-    }).describedAs(Arrays::toString);
+    };
+    return gen.describedAs(Arrays::toString);
   }
 
-  static Source<ByteString> byteStrings(int minLength, int maxLength) {
-    return byteArrays(minLength, maxLength).as(ByteString::of, ByteString::toByteArray);
+  static Gen<ByteString> byteStrings(int minLength, int maxLength) {
+    return byteArrays(minLength, maxLength).map((Function<byte[], ByteString>) ByteString::of);
   }
 
-  static Source<ByteString> privateKeys() {
-    return byteArrays(32, 32).as(Generators::clamp, ByteString::toByteArray);
+  static Gen<ByteString> privateKeys() {
+    return byteArrays(32, 32).map(Generators::clamp);
   }
 
   static ByteString clamp(byte[] privateKey) {
