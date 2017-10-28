@@ -122,7 +122,7 @@ class SecretBoxTest implements WithQuickTheories {
           final SecretBox box = new SecretBox(key);
           final byte[] ciphertext = box.seal(nonce, message).toByteArray();
           // flip a single random bit of plaintext
-          int mask = (1 << (v % 8));
+          byte mask = (byte) (1 << (v % 8));
           if (mask == 0) {
             mask = 1;
           }

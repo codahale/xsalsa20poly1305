@@ -42,9 +42,9 @@ public interface Generators {
   }
 
   static ByteString clamp(byte[] privateKey) {
-    privateKey[0] &= 248;
-    privateKey[31] &= 127;
-    privateKey[31] |= 64;
+    privateKey[0] &= (byte) 248;
+    privateKey[31] &= (byte) 127;
+    privateKey[31] |= (byte) 64;
     return ByteString.of(privateKey);
   }
 }

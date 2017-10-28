@@ -22,7 +22,6 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -33,18 +32,10 @@ public class KaliumBenchmarks {
   @Param({"100", "1024", "10240"})
   private int size = 100;
 
-  private SecretBox box;
-  private byte[] nonce;
-  private byte[] plaintext;
-  private byte[] ciphertext;
-
-  @Setup
-  public void setup() {
-    this.box = new SecretBox(new byte[32]);
-    this.nonce = new byte[24];
-    this.plaintext = new byte[size];
-    this.ciphertext = box.encrypt(nonce, plaintext);
-  }
+  private final SecretBox box = new SecretBox(new byte[32]);
+  private byte[] nonce = new byte[24];
+  private byte[] plaintext = new byte[size];
+  private byte[] ciphertext = box.encrypt(nonce, plaintext);
 
   @Benchmark
   public byte[] encrypt() {

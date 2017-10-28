@@ -29,9 +29,8 @@ import org.whispersystems.curve25519.Curve25519;
 import org.whispersystems.curve25519.java.curve_sigs;
 
 /**
- * Encryption and decryption using XSalsa20Poly1305.
- * <p>
- * Compatible with NaCl's {@code box} and {@code secretbox} constructions.
+ * Encryption and decryption using XSalsa20Poly1305. <p> Compatible with NaCl's {@code box} and
+ * {@code secretbox} constructions.
  */
 @Immutable
 public class SecretBox {
@@ -89,9 +88,9 @@ public class SecretBox {
    */
   public static ByteString generatePrivateKey() {
     final byte[] k = generateSecretKey().toByteArray();
-    k[0] &= 248;
-    k[31] &= 127;
-    k[31] |= 64;
+    k[0] &= (byte) 248;
+    k[31] &= (byte) 127;
+    k[31] |= (byte) 64;
     return ByteString.of(k);
   }
 
@@ -180,12 +179,10 @@ public class SecretBox {
   }
 
   /**
-   * Generates a random nonce.
-   * <p>
-   * <b>N.B.:</b> Use of this method is probably fine, but because an entropy-exhausted or
-   * compromised {@link SecureRandom} provider might generate duplicate nonces (which would allow an
-   * attacker to potentially decrypt and even forge messages), {@link #nonce(ByteString)}
-   * is recommended instead.
+   * Generates a random nonce. <p> <b>N.B.:</b> Use of this method is probably fine, but because an
+   * entropy-exhausted or compromised {@link SecureRandom} provider might generate duplicate nonces
+   * (which would allow an attacker to potentially decrypt and even forge messages), {@link
+   * #nonce(ByteString)} is recommended instead.
    *
    * @return a 24-byte nonce
    */
@@ -198,18 +195,14 @@ public class SecretBox {
 
   /**
    * Generates a random nonce which is guaranteed to be unique even if the process's PRNG is
-   * exhausted or compromised.
-   * <p>
-   * Internally, this creates a Blake2b instance with the given key, a random 16-byte salt, and a
-   * random 16-byte personalization tag. It then hashes the message and returns the resulting
-   * 24-byte digest as the nonce.
-   * <p>
-   * In the event of a broken or entropy-exhausted {@link SecureRandom} provider, the nonce is
-   * essentially equivalent to a synthetic IV and should be unique for any given key/message pair.
-   * The result will be deterministic, which will allow attackers to detect duplicate messages.
-   * <p>
-   * In the event of a compromised {@link SecureRandom} provider, the attacker would need a complete
-   * second-preimage attack against Blake2b in order to produce colliding nonces.
+   * exhausted or compromised. <p> Internally, this creates a Blake2b instance with the given key, a
+   * random 16-byte salt, and a random 16-byte personalization tag. It then hashes the message and
+   * returns the resulting 24-byte digest as the nonce. <p> In the event of a broken or
+   * entropy-exhausted {@link SecureRandom} provider, the nonce is essentially equivalent to a
+   * synthetic IV and should be unique for any given key/message pair. The result will be
+   * deterministic, which will allow attackers to detect duplicate messages. <p> In the event of a
+   * compromised {@link SecureRandom} provider, the attacker would need a complete second-preimage
+   * attack against Blake2b in order to produce colliding nonces.
    *
    * @param message the message to be encrypted
    * @return a 24-byte nonce

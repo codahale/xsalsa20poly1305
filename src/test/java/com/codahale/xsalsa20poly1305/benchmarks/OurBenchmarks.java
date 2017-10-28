@@ -25,7 +25,6 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -36,22 +35,12 @@ public class OurBenchmarks {
   @Param({"100", "1024", "10240"})
   private int size = 100;
 
-  private SecretBox box;
-  private SimpleBox simpleBox;
-  private ByteString nonce;
-  private ByteString plaintext;
-  private ByteString boxCiphertext;
-  private ByteString simpleCiphertext;
-
-  @Setup
-  public void setup() {
-    this.box = new SecretBox(ByteString.of(new byte[32]));
-    this.simpleBox = new SimpleBox(ByteString.of(new byte[32]));
-    this.nonce = ByteString.of(new byte[24]);
-    this.plaintext = ByteString.of(new byte[size]);
-    this.boxCiphertext = box.seal(nonce, plaintext);
-    this.simpleCiphertext = simpleBox.seal(plaintext);
-  }
+  private final SecretBox box = new SecretBox(ByteString.of(new byte[32]));
+  private final SimpleBox simpleBox = new SimpleBox(ByteString.of(new byte[32]));
+  private final ByteString nonce = ByteString.of(new byte[24]);
+  private final ByteString plaintext = ByteString.of(new byte[size]);
+  private final ByteString boxCiphertext = box.seal(nonce, plaintext);
+  private final ByteString simpleCiphertext = simpleBox.seal(plaintext);
 
   @Benchmark
   public ByteString seal() {
