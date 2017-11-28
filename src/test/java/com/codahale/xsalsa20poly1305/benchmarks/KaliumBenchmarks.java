@@ -29,10 +29,11 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Benchmark)
 public class KaliumBenchmarks {
 
+  private final SecretBox box = new SecretBox(new byte[32]);
+
   @Param({"100", "1024", "10240"})
   private int size = 100;
 
-  private final SecretBox box = new SecretBox(new byte[32]);
   private byte[] nonce = new byte[24];
   private byte[] plaintext = new byte[size];
   private byte[] ciphertext = box.encrypt(nonce, plaintext);

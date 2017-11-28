@@ -6,9 +6,7 @@ import static org.bouncycastle.util.Pack.littleEndianToInt;
 import java.nio.charset.StandardCharsets;
 import org.bouncycastle.crypto.engines.Salsa20Engine;
 
-/**
- * An implementation of the HSalsa20 hash based on the Bouncy Castle Salsa20 core.
- */
+/** An implementation of the HSalsa20 hash based on the Bouncy Castle Salsa20 core. */
 interface HSalsa20 {
 
   byte[] SIGMA = "expand 32-byte k".getBytes(StandardCharsets.US_ASCII);

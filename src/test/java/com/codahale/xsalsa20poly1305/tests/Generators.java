@@ -23,13 +23,14 @@ import org.quicktheories.impl.Constraint;
 public interface Generators {
 
   static Gen<byte[]> byteArrays(int minLength, int maxLength) {
-    final Gen<byte[]> gen = prng -> {
-      final byte[] bytes = new byte[(int) prng.next(Constraint.between(minLength, maxLength))];
-      for (int i = 0; i < bytes.length; i++) {
-        bytes[i] = (byte) prng.next(Constraint.between(0, 255));
-      }
-      return bytes;
-    };
+    final Gen<byte[]> gen =
+        prng -> {
+          final byte[] bytes = new byte[(int) prng.next(Constraint.between(minLength, maxLength))];
+          for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) prng.next(Constraint.between(0, 255));
+          }
+          return bytes;
+        };
     return gen.describedAs(Arrays::toString);
   }
 

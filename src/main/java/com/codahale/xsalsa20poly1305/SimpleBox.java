@@ -22,8 +22,8 @@ import okio.ByteString;
 
 /**
  * Convenience functions for encryption without requiring nonce management.
- * <p>
- * Compatible with RbNaCl's SimpleBox construction, but generates misuse-resistant nonces.
+ *
+ * <p>Compatible with RbNaCl's SimpleBox construction, but generates misuse-resistant nonces.
  */
 @Immutable
 public class SimpleBox {
@@ -95,7 +95,7 @@ public class SimpleBox {
    *
    * @param ciphertext an encrypted message
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
-   * ciphertext was modified, an empty {@link Optional}
+   *     ciphertext was modified, an empty {@link Optional}
    */
   public Optional<ByteString> open(@Nonnull ByteString ciphertext) {
     if (ciphertext.size() < SecretBox.NONCE_SIZE) {

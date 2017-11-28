@@ -53,22 +53,24 @@ class SimpleBoxTest implements WithQuickTheories {
   @Test
   void roundTrip() throws Exception {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
-        .check((key, message) -> {
-          final SimpleBox box = new SimpleBox(key);
-          return box.open(box.seal(message)).map(message::equals).orElse(false);
-        });
+        .check(
+            (key, message) -> {
+              final SimpleBox box = new SimpleBox(key);
+              return box.open(box.seal(message)).map(message::equals).orElse(false);
+            });
   }
 
   @Test
   void pkRoundTrip() throws Exception {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(1, 4096))
-        .check((privateKeyA, privateKeyB, message) -> {
-          final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
-          final ByteString publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
-          final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
-          final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
-          return boxB.open(boxA.seal(message)).map(message::equals).orElse(false);
-        });
+        .check(
+            (privateKeyA, privateKeyB, message) -> {
+              final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
+              final ByteString publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
+              final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
+              final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
+              return boxB.open(boxA.seal(message)).map(message::equals).orElse(false);
+            });
   }
 
   @Test
