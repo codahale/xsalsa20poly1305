@@ -35,13 +35,13 @@ import org.quicktheories.WithQuickTheories;
 class SecretBoxTest implements WithQuickTheories {
 
   @Test
-  void shortKey() throws Exception {
+  void shortKey() {
     qt().forAll(byteStrings(1, 31))
         .checkAssert(key -> assertThrows(IllegalArgumentException.class, () -> new SecretBox(key)));
   }
 
   @Test
-  void generateSecretKey() throws Exception {
+  void generateSecretKey() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString key = SecretBox.generateSecretKey();
     final SecretBox box = new SecretBox(key);
@@ -52,7 +52,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void generateKeyPair() throws Exception {
+  void generateKeyPair() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString privateKeyA = SecretBox.generatePrivateKey();
     final ByteString publicKeyA = SecretBox.generatePublicKey(privateKeyA);
@@ -67,7 +67,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void roundTrip() throws Exception {
+  void roundTrip() {
     qt().withExamples(1)
         .withShrinkCycles(1)
         .forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
@@ -79,7 +79,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void pkRoundTrip() throws Exception {
+  void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
@@ -92,7 +92,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void badKey() throws Exception {
+  void badKey() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096), byteStrings(32, 32))
         .assuming((keyA, nonce, message, keyB) -> !keyA.equals(keyB))
         .check(
@@ -104,7 +104,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void badNonce() throws Exception {
+  void badNonce() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096), byteStrings(24, 24))
         .assuming((key, nonceA, message, nonceB) -> !nonceA.equals(nonceB))
         .check(
@@ -115,7 +115,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void badCiphertext() throws Exception {
+  void badCiphertext() {
     qt().forAll(
             byteStrings(32, 32),
             byteStrings(24, 24),
@@ -136,7 +136,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void randomNonce() throws Exception {
+  void randomNonce() {
     final SecretBox box = new SecretBox(ByteString.of(new byte[32]));
     final List<ByteString> nonces =
         IntStream.range(0, 1000).mapToObj(i -> box.nonce()).collect(Collectors.toList());
@@ -147,7 +147,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void misuseResistantNonce() throws Exception {
+  void misuseResistantNonce() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
         .check(
             (key, message) -> {
@@ -157,7 +157,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void fromUsToLibSodium() throws Exception {
+  void fromUsToLibSodium() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (key, nonce, message) -> {
@@ -171,7 +171,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void fromLibSodiumToUs() throws Exception {
+  void fromLibSodiumToUs() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (key, nonce, message) -> {
@@ -184,7 +184,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void pkFromUsToLibSodium() throws Exception {
+  void pkFromUsToLibSodium() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
@@ -200,7 +200,7 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void pkFromLibSodiumToUs() throws Exception {
+  void pkFromLibSodiumToUs() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {

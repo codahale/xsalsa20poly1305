@@ -27,7 +27,7 @@ import org.quicktheories.WithQuickTheories;
 class SimpleBoxTest implements WithQuickTheories {
 
   @Test
-  void generateSecretKey() throws Exception {
+  void generateSecretKey() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString key = SimpleBox.generateSecretKey();
     final SimpleBox box = new SimpleBox(key);
@@ -37,7 +37,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void generateKeyPair() throws Exception {
+  void generateKeyPair() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString privateKeyA = SimpleBox.generatePrivateKey();
     final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
@@ -51,7 +51,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void roundTrip() throws Exception {
+  void roundTrip() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
         .check(
             (key, message) -> {
@@ -61,7 +61,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void pkRoundTrip() throws Exception {
+  void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, message) -> {
@@ -74,7 +74,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void shortMessage() throws Exception {
+  void shortMessage() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 24))
         .check((key, message) -> !new SimpleBox(key).open(message).isPresent());
   }

@@ -7,9 +7,13 @@ import java.nio.charset.StandardCharsets;
 import org.bouncycastle.crypto.engines.Salsa20Engine;
 
 /** An implementation of the HSalsa20 hash based on the Bouncy Castle Salsa20 core. */
-interface HSalsa20 {
+class HSalsa20 {
 
-  byte[] SIGMA = "expand 32-byte k".getBytes(StandardCharsets.US_ASCII);
+  private HSalsa20() {
+    // singleton
+  }
+
+  private static final byte[] SIGMA = "expand 32-byte k".getBytes(StandardCharsets.US_ASCII);
 
   static void hsalsa20(byte[] out, byte[] in, byte[] k) {
     final int[] x = new int[16];

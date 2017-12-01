@@ -11,7 +11,7 @@ import org.quicktheories.WithQuickTheories;
 class HSalsa20Test implements WithQuickTheories {
 
   @Test
-  void interoperability() throws Exception {
+  void interoperability() {
     qt().forAll(byteArrays(16, 16), byteArrays(32, 32))
         .check(
             (in, key) -> {
