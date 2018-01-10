@@ -16,18 +16,18 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import com.codahale.xsalsa20poly1305.SimpleBox;
 import java.util.Optional;
 import okio.ByteString;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.quicktheories.WithQuickTheories;
 
-class SimpleBoxTest implements WithQuickTheories {
+public class SimpleBoxTest implements WithQuickTheories {
 
   @Test
-  void generateSecretKey() {
+  public void generateSecretKey() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString key = SimpleBox.generateSecretKey();
     final SimpleBox box = new SimpleBox(key);
@@ -37,7 +37,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void generateKeyPair() {
+  public void generateKeyPair() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString privateKeyA = SimpleBox.generatePrivateKey();
     final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
@@ -51,7 +51,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void roundTrip() {
+  public void roundTrip() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
         .check(
             (key, message) -> {
@@ -61,7 +61,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void pkRoundTrip() {
+  public void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, message) -> {
@@ -74,7 +74,7 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void shortMessage() {
+  public void shortMessage() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 24))
         .check((key, message) -> !new SimpleBox(key).open(message).isPresent());
   }
