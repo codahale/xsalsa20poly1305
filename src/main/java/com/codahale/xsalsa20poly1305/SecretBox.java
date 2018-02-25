@@ -26,8 +26,7 @@ import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.whispersystems.curve25519.Curve25519;
-import org.whispersystems.curve25519.java.curve_sigs;
+import org.bouncycastle.math.ec.rfc7748.X25519;
 
 /**
  * Encryption and decryption using XSalsa20Poly1305.
@@ -64,8 +63,8 @@ public class SecretBox {
   }
 
   private static ByteString sharedSecret(@Nonnull byte[] publicKey, @Nonnull byte[] privateKey) {
-    final byte[] s =
-        Curve25519.getInstance(Curve25519.BEST).calculateAgreement(publicKey, privateKey);
+    final byte[] s = new byte[32];
+    X25519.scalarMult(privateKey, 0, publicKey, 0, s, 0);
     final byte[] k = new byte[32];
     HSalsa20.hsalsa20(k, new byte[16], s);
     return ByteString.of(k);
@@ -79,7 +78,7 @@ public class SecretBox {
    */
   public static ByteString generatePublicKey(ByteString privateKey) {
     final byte[] publicKey = new byte[32];
-    curve_sigs.curve25519_keygen(publicKey, privateKey.toByteArray());
+    X25519.scalarMultBase(privateKey.toByteArray(), 0, publicKey, 0);
     return ByteString.of(publicKey);
   }
 

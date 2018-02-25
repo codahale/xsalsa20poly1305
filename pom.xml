@@ -70,11 +70,6 @@
       <artifactId>bcprov-jdk15on</artifactId>
       <version>1.59</version>
     </dependency>
-    <dependency>
-      <groupId>org.whispersystems</groupId>
-      <artifactId>curve25519-java</artifactId>
-      <version>0.4.1</version>
-    </dependency>
     <!-- annotations for static analysis -->
     <dependency>
       <groupId>com.google.code.findbugs</groupId>

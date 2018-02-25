@@ -16,8 +16,7 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 </dependency>
 ```
 
-It depends on Bouncy Castle for Salsa20, XSalsa20, and Poly1305 implementations, and on Open Whisper
-Systems' curve25519-java for Curve25519 operations.
+It depends on Bouncy Castle for Salsa20, XSalsa20, Poly1305, and X25519 implementations.
 
 ## Examples
 
@@ -110,41 +109,31 @@ Because of the catastrophic downside risk of nonce reuse, the `SimpleBox` functi
 
 ## Performance
 
-For small messages (i.e. ~100 bytes), it's only a little slower than `libsodium`-based libraries like
-Kalium. For larger messages (i.e., ~1KiB), Kalium is faster:
+Plenty fast.
 
 ```
-Benchmark                 (size)  Mode  Cnt      Score      Error  Units
-KaliumBenchmarks.encrypt     100  avgt   20   1069.459 ±   23.093  ns/op
-KaliumBenchmarks.decrypt     100  avgt   20   1437.068 ±   85.551  ns/op
+Benchmark                 (size)  Mode  Cnt      Score     Error  Units
+KaliumBenchmarks.decrypt     100  avgt   20   1793.539 ± 124.656  ns/op
+KaliumBenchmarks.decrypt    1024  avgt   20   1473.534 ±  34.491  ns/op
+KaliumBenchmarks.decrypt   10240  avgt   20   1440.947 ±  27.825  ns/op
+KaliumBenchmarks.encrypt     100  avgt   20   1178.445 ±  29.802  ns/op
+KaliumBenchmarks.encrypt    1024  avgt   20   1168.267 ±  28.839  ns/op
+KaliumBenchmarks.encrypt   10240  avgt   20   1168.010 ±  17.696  ns/op
 
-KaliumBenchmarks.encrypt    1024  avgt   20   3226.534 ±   52.449  ns/op
-KaliumBenchmarks.decrypt    1024  avgt   20   3718.079 ±  251.205  ns/op
+OurBenchmarks.open           100  avgt   20   1421.482 ±  22.579  ns/op
+OurBenchmarks.open          1024  avgt   20   1434.875 ±  38.469  ns/op
+OurBenchmarks.open         10240  avgt   20   1384.131 ±  37.711  ns/op
+OurBenchmarks.seal           100  avgt   20   1445.086 ±  26.644  ns/op
+OurBenchmarks.seal          1024  avgt   20   1516.173 ±  33.377  ns/op
+OurBenchmarks.seal         10240  avgt   20   1444.614 ±  33.779  ns/op
 
-KaliumBenchmarks.encrypt   10240  avgt   20  23606.933 ±  609.937  ns/op
-KaliumBenchmarks.decrypt   10240  avgt   20  24179.750 ±  572.735  ns/op
-
-OurBenchmarks.seal           100  avgt   20   1664.803 ±   32.344  ns/op
-OurBenchmarks.open           100  avgt   20   1559.468 ±   23.389  ns/op
-
-OurBenchmarks.seal          1024  avgt   20  10147.395 ±  140.463  ns/op
-OurBenchmarks.open          1024  avgt   20   8715.979 ±  179.867  ns/op
-
-OurBenchmarks.open         10240  avgt   20  81910.397 ± 1425.562  ns/op
-OurBenchmarks.seal         10240  avgt   20  95930.340 ± 1995.765  ns/op
-
-OurBenchmarks.simpleSeal     100  avgt   20   5976.123 ±  129.270  ns/op
-OurBenchmarks.simpleOpen     100  avgt   20   1614.172 ±   26.352  ns/op
-
-OurBenchmarks.simpleSeal    1024  avgt   20  14675.347 ±  661.392  ns/op
-OurBenchmarks.simpleOpen    1024  avgt   20   8802.043 ±  190.319  ns/op
-
-OurBenchmarks.simpleSeal   10240  avgt   20  91625.154 ± 1917.489  ns/op
-OurBenchmarks.simpleOpen   10240  avgt   20  81568.890 ± 1333.978  ns/op
+OurBenchmarks.simpleOpen     100  avgt   20   1433.761 ±  38.734  ns/op
+OurBenchmarks.simpleOpen    1024  avgt   20   1434.190 ±  19.630  ns/op
+OurBenchmarks.simpleOpen   10240  avgt   20   1427.694 ±  47.438  ns/op
+OurBenchmarks.simpleSeal     100  avgt   20  10559.574 ± 331.472  ns/op
+OurBenchmarks.simpleSeal    1024  avgt   20  10911.187 ± 251.743  ns/op
+OurBenchmarks.simpleSeal   10240  avgt   20  10830.519 ± 218.606  ns/op
 ```
-
-(These benchmarks were run on my laptop while I was making jokes on Twitter. I would expect your
-production environment to be a little different.)
 
 ## License
 
