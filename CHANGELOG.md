@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.9.0: 2018-02-25
+
+* Upgraded Bouncy Castle.
+* Upgraded okio.
+* Dropped `curve25519-java` dependency.
+
 ## v0.8.1: 2017-05-15
 
 * Upgraded Bouncy Castle.
