@@ -21,12 +21,13 @@
 
 set -e
 
+VERSION="1.0.16"
 # check if libsodium is already installed
 if [ ! -d "$HOME/libsodium/lib" ]; then
-  wget https://github.com/jedisct1/libsodium/releases/download/1.0.11/libsodium-1.0.11.tar.gz
-  tar xvfz libsodium-1.0.11.tar.gz
-  cd libsodium-1.0.11
-  ./configure --prefix=$HOME/libsodium --enable-minimal
+  wget "https://github.com/jedisct1/libsodium/releases/download/$VERSION/libsodium-$VERSION.tar.gz"
+  tar xvfz "libsodium-$VERSION.tar.gz"
+  cd "libsodium-$VERSION"
+  ./configure --prefix="$HOME/libsodium" --enable-minimal
   make
   make install
 else
