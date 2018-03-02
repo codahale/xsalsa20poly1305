@@ -17,28 +17,25 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.codahale.xsalsa20poly1305.SimpleBox;
-import java.util.Optional;
 import okio.ByteString;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.quicktheories.WithQuickTheories;
 
-public class SimpleBoxTest implements WithQuickTheories {
+class SimpleBoxTest implements WithQuickTheories {
 
   @Test
-  public void generateSecretKey() {
+  void generateSecretKey() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString key = SimpleBox.generateSecretKey();
     final SimpleBox box = new SimpleBox(key);
-    final ByteString c = box.seal(message);
-    final Optional<ByteString> p = box.open(c);
-    assertEquals(message, p.orElseThrow(NullPointerException::new));
+    assertThat(box.open(box.seal(message))).contains(message);
   }
 
   @Test
-  public void generateKeyPair() {
+  void generateKeyPair() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString privateKeyA = SimpleBox.generatePrivateKey();
     final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
@@ -46,13 +43,11 @@ public class SimpleBoxTest implements WithQuickTheories {
     final ByteString publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
     final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
     final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
-    final ByteString c = boxA.seal(message);
-    final Optional<ByteString> p = boxB.open(c);
-    assertEquals(message, p.orElseThrow(NullPointerException::new));
+    assertThat(boxB.open(boxA.seal(message))).contains(message);
   }
 
   @Test
-  public void roundTrip() {
+  void roundTrip() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
         .check(
             (key, message) -> {
@@ -62,7 +57,7 @@ public class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void pkRoundTrip() {
+  void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, message) -> {
@@ -75,7 +70,7 @@ public class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void shortMessage() {
+  void shortMessage() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 24))
         .check((key, message) -> !new SimpleBox(key).open(message).isPresent());
   }

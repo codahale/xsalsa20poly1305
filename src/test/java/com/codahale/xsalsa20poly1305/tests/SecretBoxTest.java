@@ -17,7 +17,8 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.codahale.xsalsa20poly1305.SecretBox;
 import java.util.List;
@@ -28,39 +29,31 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import okio.ByteString;
 import org.abstractj.kalium.crypto.Box;
-import org.apache.commons.math3.exception.NullArgumentException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.quicktheories.WithQuickTheories;
 
-public class SecretBoxTest implements WithQuickTheories {
+class SecretBoxTest implements WithQuickTheories {
 
   @Test
-  public void shortKey() {
+  void shortKey() {
     qt().forAll(byteStrings(1, 31))
-        .check(
-            key -> {
-              try {
-                new SecretBox(key);
-                return false;
-              } catch (IllegalArgumentException e) {
-                return true;
-              }
-            });
+        .checkAssert(
+            key ->
+                assertThatThrownBy(() -> new SecretBox(key))
+                    .isInstanceOf(IllegalArgumentException.class));
   }
 
   @Test
-  public void generateSecretKey() {
+  void generateSecretKey() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString key = SecretBox.generateSecretKey();
     final SecretBox box = new SecretBox(key);
     final ByteString n = box.nonce(message);
-    final ByteString c = box.seal(n, message);
-    final Optional<ByteString> p = box.open(n, c);
-    assertEquals(message, p.orElseThrow(NullArgumentException::new));
+    assertThat(box.open(n, box.seal(n, message))).contains(message);
   }
 
   @Test
-  public void generateKeyPair() {
+  void generateKeyPair() {
     final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString privateKeyA = SecretBox.generatePrivateKey();
     final ByteString publicKeyA = SecretBox.generatePublicKey(privateKeyA);
@@ -69,13 +62,11 @@ public class SecretBoxTest implements WithQuickTheories {
     final SecretBox boxA = new SecretBox(publicKeyB, privateKeyA);
     final SecretBox boxB = new SecretBox(publicKeyA, privateKeyB);
     final ByteString n = boxA.nonce(message);
-    final ByteString c = boxA.seal(n, message);
-    final Optional<ByteString> p = boxB.open(n, c);
-    assertEquals(message, p.orElseThrow(NullArgumentException::new));
+    assertThat(boxB.open(n, boxA.seal(n, message))).contains(message);
   }
 
   @Test
-  public void roundTrip() {
+  void roundTrip() {
     qt().withExamples(1)
         .withShrinkCycles(1)
         .forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
@@ -87,7 +78,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void pkRoundTrip() {
+  void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
@@ -100,7 +91,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void badKey() {
+  void badKey() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096), byteStrings(32, 32))
         .assuming((keyA, nonce, message, keyB) -> !keyA.equals(keyB))
         .check(
@@ -112,7 +103,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void badNonce() {
+  void badNonce() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096), byteStrings(24, 24))
         .assuming((key, nonceA, message, nonceB) -> !nonceA.equals(nonceB))
         .check(
@@ -123,7 +114,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void badCiphertext() {
+  void badCiphertext() {
     qt().forAll(
             byteStrings(32, 32),
             byteStrings(24, 24),
@@ -144,7 +135,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void randomNonce() {
+  void randomNonce() {
     final SecretBox box = new SecretBox(ByteString.of(new byte[32]));
     final List<ByteString> nonces =
         IntStream.range(0, 1000).mapToObj(i -> box.nonce()).collect(Collectors.toList());
@@ -155,7 +146,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void misuseResistantNonce() {
+  void misuseResistantNonce() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
         .check(
             (key, message) -> {
@@ -165,7 +156,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void fromUsToLibSodium() {
+  void fromUsToLibSodium() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (key, nonce, message) -> {
@@ -179,7 +170,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void fromLibSodiumToUs() {
+  void fromLibSodiumToUs() {
     qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (key, nonce, message) -> {
@@ -192,7 +183,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void pkFromUsToLibSodium() {
+  void pkFromUsToLibSodium() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
@@ -208,7 +199,7 @@ public class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  public void pkFromLibSodiumToUs() {
+  void pkFromLibSodiumToUs() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
