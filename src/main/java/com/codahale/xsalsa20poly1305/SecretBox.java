@@ -44,7 +44,7 @@ public class SecretBox {
    *
    * @param secretKey a 32-byte secret key
    */
-  public SecretBox(@Nonnull ByteString secretKey) {
+  public SecretBox(ByteString secretKey) {
     if (secretKey.size() != 32) {
       throw new IllegalArgumentException("secretKey must be 32 bytes long");
     }
@@ -57,14 +57,23 @@ public class SecretBox {
    *
    * @param publicKey a Curve25519 public key
    * @param privateKey a Curve25519 private key
+   * @see #sharedSecret(ByteString, ByteString)
    */
-  public SecretBox(@Nonnull ByteString publicKey, @Nonnull ByteString privateKey) {
-    this(sharedSecret(publicKey.toByteArray(), privateKey.toByteArray()));
+  public SecretBox(ByteString publicKey, ByteString privateKey) {
+    this(sharedSecret(publicKey, privateKey));
   }
 
-  private static ByteString sharedSecret(@Nonnull byte[] publicKey, @Nonnull byte[] privateKey) {
+  /**
+   * Calculate the X25519/HSalsa20 shared secret for the given public key and private key.
+   *
+   * @param publicKey the recipient's public key
+   * @param privateKey the sender's private key
+   * @return a 32-byte secret key only re-calculable by the sender and recipient
+   * @see #SecretBox(ByteString, ByteString)
+   */
+  public static ByteString sharedSecret(ByteString publicKey, ByteString privateKey) {
     final byte[] s = new byte[32];
-    X25519.scalarMult(privateKey, 0, publicKey, 0, s, 0);
+    X25519.scalarMult(privateKey.toByteArray(), 0, publicKey.toByteArray(), 0, s, 0);
     final byte[] k = new byte[32];
     HSalsa20.hsalsa20(k, new byte[16], s);
     return ByteString.of(k);

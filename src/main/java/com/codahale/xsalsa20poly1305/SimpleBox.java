@@ -36,7 +36,7 @@ public class SimpleBox {
    *
    * @param secretKey a 32-byte secret key
    */
-  public SimpleBox(@Nonnull ByteString secretKey) {
+  public SimpleBox(ByteString secretKey) {
     this.box = new SecretBox(secretKey);
   }
 
@@ -47,7 +47,7 @@ public class SimpleBox {
    * @param publicKey a Curve25519 public key
    * @param privateKey a Curve25519 private key
    */
-  public SimpleBox(@Nonnull ByteString publicKey, @Nonnull ByteString privateKey) {
+  public SimpleBox(ByteString publicKey, ByteString privateKey) {
     this.box = new SecretBox(publicKey, privateKey);
   }
 
@@ -77,6 +77,18 @@ public class SimpleBox {
    */
   public static ByteString generatePrivateKey() {
     return SecretBox.generatePrivateKey();
+  }
+
+  /**
+   * Calculate the X25519/HSalsa20 shared secret for the given public key and private key.
+   *
+   * @param publicKey the recipient's public key
+   * @param privateKey the sender's private key
+   * @return a 32-byte secret key only re-calculable by the sender and recipient
+   * @see #SimpleBox(ByteString, ByteString)
+   */
+  public static ByteString sharedSecret(ByteString publicKey, ByteString privateKey) {
+    return SecretBox.sharedSecret(publicKey, privateKey);
   }
 
   /**

@@ -57,6 +57,21 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
+  void sharedSecrets() {
+    qt().forAll(privateKeys(), privateKeys())
+        .check(
+            (privateKeyA, privateKeyB) -> {
+              final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
+              final ByteString publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
+
+              final ByteString secretAB = SimpleBox.sharedSecret(publicKeyA, privateKeyB);
+              final ByteString secretBA = SimpleBox.sharedSecret(publicKeyB, privateKeyA);
+
+              return secretAB.equals(secretBA);
+            });
+  }
+
+  @Test
   void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(1, 4096))
         .check(
