@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.9.1: 2018-03-08
+
+* Added `sharedSecret` methods to `SecretBox` and `SimpleBox`.
+
 ## v0.9.0: 2018-02-25
 
 * Upgraded Bouncy Castle.

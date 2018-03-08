@@ -12,7 +12,7 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 <dependency>
   <groupId>com.codahale</groupId>
   <artifactId>xsalsa20poly1305</artifactId>
-  <version>0.9.0</version>
+  <version>0.9.1</version>
 </dependency>
 ```
 
