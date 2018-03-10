@@ -26,7 +26,6 @@ import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.bouncycastle.math.ec.rfc7748.X25519;
 
 /**
  * Encryption and decryption using XSalsa20Poly1305.
@@ -43,6 +42,7 @@ public class SecretBox {
    * Create a new {@link SecretBox} instance with the given secret key.
    *
    * @param secretKey a 32-byte secret key
+   * @see Keys#generateSecretKey()
    */
   public SecretBox(ByteString secretKey) {
     if (secretKey.size() != 32) {
@@ -57,63 +57,11 @@ public class SecretBox {
    *
    * @param publicKey a Curve25519 public key
    * @param privateKey a Curve25519 private key
-   * @see #sharedSecret(ByteString, ByteString)
+   * @see Keys#generatePrivateKey()
+   * @see Keys#generatePublicKey(ByteString)
    */
   public SecretBox(ByteString publicKey, ByteString privateKey) {
-    this(sharedSecret(publicKey, privateKey));
-  }
-
-  /**
-   * Calculate the X25519/HSalsa20 shared secret for the given public key and private key.
-   *
-   * @param publicKey the recipient's public key
-   * @param privateKey the sender's private key
-   * @return a 32-byte secret key only re-calculable by the sender and recipient
-   * @see #SecretBox(ByteString, ByteString)
-   */
-  public static ByteString sharedSecret(ByteString publicKey, ByteString privateKey) {
-    final byte[] s = new byte[32];
-    X25519.scalarMult(privateKey.toByteArray(), 0, publicKey.toByteArray(), 0, s, 0);
-    final byte[] k = new byte[32];
-    HSalsa20.hsalsa20(k, new byte[16], s);
-    return ByteString.of(k);
-  }
-
-  /**
-   * Generates a Curve25519 public key given a Curve25519 private key.
-   *
-   * @param privateKey a Curve25519 private key
-   * @return the public key matching {@code privateKey}
-   */
-  public static ByteString generatePublicKey(ByteString privateKey) {
-    final byte[] publicKey = new byte[32];
-    X25519.scalarMultBase(privateKey.toByteArray(), 0, publicKey, 0);
-    return ByteString.of(publicKey);
-  }
-
-  /**
-   * generates a Curve25519 private key.
-   *
-   * @return a Curve25519 private key
-   */
-  public static ByteString generatePrivateKey() {
-    final byte[] k = generateSecretKey().toByteArray();
-    k[0] &= (byte) 248;
-    k[31] &= (byte) 127;
-    k[31] |= (byte) 64;
-    return ByteString.of(k);
-  }
-
-  /**
-   * Generates a 32-byte secret key.
-   *
-   * @return a 32-byte secret key
-   */
-  public static ByteString generateSecretKey() {
-    final byte[] k = new byte[32];
-    final SecureRandom random = new SecureRandom();
-    random.nextBytes(k);
-    return ByteString.of(k);
+    this(Keys.sharedSecret(publicKey, privateKey));
   }
 
   /**

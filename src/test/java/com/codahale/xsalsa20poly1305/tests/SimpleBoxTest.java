@@ -17,35 +17,14 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.assertj.core.api.Assertions.assertThat;
 
+import com.codahale.xsalsa20poly1305.Keys;
 import com.codahale.xsalsa20poly1305.SimpleBox;
 import okio.ByteString;
 import org.junit.jupiter.api.Test;
 import org.quicktheories.WithQuickTheories;
 
 class SimpleBoxTest implements WithQuickTheories {
-
-  @Test
-  void generateSecretKey() {
-    final ByteString message = ByteString.encodeUtf8("this is a test");
-    final ByteString key = SimpleBox.generateSecretKey();
-    final SimpleBox box = new SimpleBox(key);
-    assertThat(box.open(box.seal(message))).contains(message);
-  }
-
-  @Test
-  void generateKeyPair() {
-    final ByteString message = ByteString.encodeUtf8("this is a test");
-    final ByteString privateKeyA = SimpleBox.generatePrivateKey();
-    final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
-    final ByteString privateKeyB = SimpleBox.generatePrivateKey();
-    final ByteString publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
-    final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
-    final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
-    assertThat(boxB.open(boxA.seal(message))).contains(message);
-  }
-
   @Test
   void roundTrip() {
     qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
@@ -57,27 +36,12 @@ class SimpleBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void sharedSecrets() {
-    qt().forAll(privateKeys(), privateKeys())
-        .check(
-            (privateKeyA, privateKeyB) -> {
-              final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
-
-              final ByteString secretAB = SimpleBox.sharedSecret(publicKeyA, privateKeyB);
-              final ByteString secretBA = SimpleBox.sharedSecret(publicKeyB, privateKeyA);
-
-              return secretAB.equals(secretBA);
-            });
-  }
-
-  @Test
   void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, message) -> {
-              final ByteString publicKeyA = SimpleBox.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = SimpleBox.generatePublicKey(privateKeyB);
+              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
               final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
               final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
               return boxB.open(boxA.seal(message)).map(message::equals).orElse(false);

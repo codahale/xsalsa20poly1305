@@ -17,9 +17,9 @@ package com.codahale.xsalsa20poly1305.tests;
 
 import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.codahale.xsalsa20poly1305.Keys;
 import com.codahale.xsalsa20poly1305.SecretBox;
 import java.util.List;
 import java.util.Objects;
@@ -44,28 +44,6 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void generateSecretKey() {
-    final ByteString message = ByteString.encodeUtf8("this is a test");
-    final ByteString key = SecretBox.generateSecretKey();
-    final SecretBox box = new SecretBox(key);
-    final ByteString n = box.nonce(message);
-    assertThat(box.open(n, box.seal(n, message))).contains(message);
-  }
-
-  @Test
-  void generateKeyPair() {
-    final ByteString message = ByteString.encodeUtf8("this is a test");
-    final ByteString privateKeyA = SecretBox.generatePrivateKey();
-    final ByteString publicKeyA = SecretBox.generatePublicKey(privateKeyA);
-    final ByteString privateKeyB = SecretBox.generatePrivateKey();
-    final ByteString publicKeyB = SecretBox.generatePublicKey(privateKeyB);
-    final SecretBox boxA = new SecretBox(publicKeyB, privateKeyA);
-    final SecretBox boxB = new SecretBox(publicKeyA, privateKeyB);
-    final ByteString n = boxA.nonce(message);
-    assertThat(boxB.open(n, boxA.seal(n, message))).contains(message);
-  }
-
-  @Test
   void roundTrip() {
     qt().withExamples(1)
         .withShrinkCycles(1)
@@ -78,27 +56,12 @@ class SecretBoxTest implements WithQuickTheories {
   }
 
   @Test
-  void sharedSecrets() {
-    qt().forAll(privateKeys(), privateKeys())
-        .check(
-            (privateKeyA, privateKeyB) -> {
-              final ByteString publicKeyA = SecretBox.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = SecretBox.generatePublicKey(privateKeyB);
-
-              final ByteString secretAB = SecretBox.sharedSecret(publicKeyA, privateKeyB);
-              final ByteString secretBA = SecretBox.sharedSecret(publicKeyB, privateKeyA);
-
-              return secretAB.equals(secretBA);
-            });
-  }
-
-  @Test
   void pkRoundTrip() {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
-              final ByteString publicKeyA = SecretBox.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = SecretBox.generatePublicKey(privateKeyB);
+              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
               final SecretBox boxA = new SecretBox(publicKeyB, privateKeyA);
               final SecretBox boxB = new SecretBox(publicKeyA, privateKeyB);
               return boxB.open(nonce, boxA.seal(nonce, message)).map(message::equals).orElse(false);
@@ -202,8 +165,8 @@ class SecretBoxTest implements WithQuickTheories {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
-              final ByteString publicKeyA = SecretBox.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = SecretBox.generatePublicKey(privateKeyB);
+              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
               final SecretBox ourBox = new SecretBox(publicKeyB, privateKeyA);
               final ByteString c = ourBox.seal(nonce, message);
               final Box theirBox = new Box(publicKeyA.toByteArray(), privateKeyB.toByteArray());
@@ -218,8 +181,8 @@ class SecretBoxTest implements WithQuickTheories {
     qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
-              final ByteString publicKeyA = SecretBox.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = SecretBox.generatePublicKey(privateKeyB);
+              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
               final Box theirBox = new Box(publicKeyB.toByteArray(), privateKeyA.toByteArray());
               final byte[] c = theirBox.encrypt(nonce.toByteArray(), message.toByteArray());
               final SecretBox ourBox = new SecretBox(publicKeyA, privateKeyB);

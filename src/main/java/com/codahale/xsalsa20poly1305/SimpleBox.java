@@ -52,46 +52,6 @@ public class SimpleBox {
   }
 
   /**
-   * Generates a 32-byte secret key.
-   *
-   * @return a 32-byte secret key
-   */
-  public static ByteString generateSecretKey() {
-    return SecretBox.generateSecretKey();
-  }
-
-  /**
-   * Generates a Curve25519 public key given a Curve25519 private key.
-   *
-   * @param privateKey a Curve25519 private key
-   * @return the public key matching {@code privateKey}
-   */
-  public static ByteString generatePublicKey(ByteString privateKey) {
-    return SecretBox.generatePublicKey(privateKey);
-  }
-
-  /**
-   * generates a Curve25519 private key.
-   *
-   * @return a Curve25519 private key
-   */
-  public static ByteString generatePrivateKey() {
-    return SecretBox.generatePrivateKey();
-  }
-
-  /**
-   * Calculate the X25519/HSalsa20 shared secret for the given public key and private key.
-   *
-   * @param publicKey the recipient's public key
-   * @param privateKey the sender's private key
-   * @return a 32-byte secret key only re-calculable by the sender and recipient
-   * @see #SimpleBox(ByteString, ByteString)
-   */
-  public static ByteString sharedSecret(ByteString publicKey, ByteString privateKey) {
-    return SecretBox.sharedSecret(publicKey, privateKey);
-  }
-
-  /**
    * Encrypt the plaintext with the given key.
    *
    * @param plaintext any arbitrary bytes
