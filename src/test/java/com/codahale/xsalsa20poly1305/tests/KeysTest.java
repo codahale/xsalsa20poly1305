@@ -37,15 +37,13 @@ class KeysTest implements WithQuickTheories {
 
   @Test
   void generateKeyPair() {
-    final ByteString message = ByteString.encodeUtf8("this is a test");
     final ByteString privateKeyA = Keys.generatePrivateKey();
     final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
     final ByteString privateKeyB = Keys.generatePrivateKey();
     final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
-    final SecretBox boxA = new SecretBox(publicKeyB, privateKeyA);
-    final SecretBox boxB = new SecretBox(publicKeyA, privateKeyB);
-    final ByteString n = boxA.nonce(message);
-    assertThat(boxB.open(n, boxA.seal(n, message))).contains(message);
+
+    assertThat(Keys.sharedSecret(publicKeyB, privateKeyA))
+        .isEqualTo(Keys.sharedSecret(publicKeyA, privateKeyB));
   }
 
   @Test
