@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.10.0: 2018-03-14
+
+* Extracted key generation methods to new `Keys` class.
+
 ## v0.9.1: 2018-03-08
 
 * Added `sharedSecret` methods to `SecretBox` and `SimpleBox`.

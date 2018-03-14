@@ -12,7 +12,7 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 <dependency>
   <groupId>com.codahale</groupId>
   <artifactId>xsalsa20poly1305</artifactId>
-  <version>0.9.1</version>
+  <version>0.10.0</version>
 </dependency>
 ```
 
@@ -21,18 +21,19 @@ It depends on Bouncy Castle for Salsa20, XSalsa20, Poly1305, and X25519 implemen
 ## Examples
 
 ```java
+import com.codahale.xsalsa20poly1305.Keys;
 import com.codahale.xsalsa20poly1305.SimpleBox;
 import okio.ByteString;
 
 class Examples {
   void asymmetricEncryption() {
     // Alice has a key pair
-    final ByteString alicePrivateKey = SimpleBox.generatePrivateKey();
-    final ByteString alicePublicKey = SimpleBox.generatePublicKey(alicePrivateKey);
+    final ByteString alicePrivateKey = Keys.generatePrivateKey();
+    final ByteString alicePublicKey = Keys.generatePublicKey(alicePrivateKey);
     
     // Bob also has a key pair
-    final ByteString bobPrivateKey = SimpleBox.generatePrivateKey();
-    final ByteString bobPublicKey = SimpleBox.generatePublicKey(bobPrivateKey);
+    final ByteString bobPrivateKey = Keys.generatePrivateKey();
+    final ByteString bobPublicKey = Keys.generatePublicKey(bobPrivateKey);
     
     // Bob and Alice exchange public keys. (Not pictured.)
     
@@ -55,7 +56,7 @@ class Examples {
  
   void symmetricEncryption() {
     // There is a single secret key.
-    final ByteString secretKey = SimpleBox.generateSecretKey();  
+    final ByteString secretKey = Keys.generateSecretKey();  
    
     // And you want to use it to store a very secret message.
     final ByteString message = ByteString.encodeUtf8("this is very secret");
