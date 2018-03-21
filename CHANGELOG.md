@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.10.1: 2018-03-20
+
+* Minor optimizations for HSalsa20 transform.
+
 ## v0.10.0: 2018-03-14
 
 * Extracted key generation methods to new `Keys` class.
