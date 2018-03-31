@@ -16,8 +16,6 @@
 package com.codahale.xsalsa20poly1305;
 
 import java.util.Optional;
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import okio.Buffer;
 import okio.ByteString;
 
@@ -26,7 +24,6 @@ import okio.ByteString;
  *
  * <p>Compatible with RbNaCl's SimpleBox construction, but generates misuse-resistant nonces.
  */
-@Immutable
 public class SimpleBox {
 
   private final SecretBox box;
@@ -57,7 +54,7 @@ public class SimpleBox {
    * @param plaintext any arbitrary bytes
    * @return the ciphertext
    */
-  public ByteString seal(@Nonnull ByteString plaintext) {
+  public ByteString seal(ByteString plaintext) {
     final ByteString nonce = box.nonce(plaintext);
     final ByteString ciphertext = box.seal(nonce, plaintext);
     return new Buffer().write(nonce).write(ciphertext).readByteString();
@@ -70,7 +67,7 @@ public class SimpleBox {
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
    *     ciphertext was modified, an empty {@link Optional}
    */
-  public Optional<ByteString> open(@Nonnull ByteString ciphertext) {
+  public Optional<ByteString> open(ByteString ciphertext) {
     if (ciphertext.size() < SecretBox.NONCE_SIZE) {
       return Optional.empty();
     }

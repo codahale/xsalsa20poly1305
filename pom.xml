@@ -70,13 +70,6 @@
       <artifactId>bcprov-jdk15on</artifactId>
       <version>1.59</version>
     </dependency>
-    <!-- annotations for static analysis -->
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
-      <version>3.0.2</version>
-      <optional>true</optional>
-    </dependency>
     <!-- compatible libraries for interoperability tests -->
     <dependency>
       <groupId>com.github.nitram509</groupId>

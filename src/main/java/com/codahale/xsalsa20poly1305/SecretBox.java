@@ -18,8 +18,6 @@ package com.codahale.xsalsa20poly1305;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Optional;
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import okio.ByteString;
 import org.bouncycastle.crypto.digests.Blake2bDigest;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
@@ -32,7 +30,6 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
  *
  * <p>Compatible with NaCl's {@code box} and {@code secretbox} constructions.
  */
-@Immutable
 public class SecretBox {
 
   static final int NONCE_SIZE = 24;
@@ -71,7 +68,7 @@ public class SecretBox {
    * @param plaintext an arbitrary message
    * @return the ciphertext
    */
-  public ByteString seal(@Nonnull ByteString nonce, @Nonnull ByteString plaintext) {
+  public ByteString seal(ByteString nonce, ByteString plaintext) {
     // initialize XSalsa20
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
     xsalsa20.init(true, new ParametersWithIV(new KeyParameter(key), nonce.toByteArray()));
@@ -102,7 +99,7 @@ public class SecretBox {
    * @see #nonce(ByteString)
    * @see #nonce()
    */
-  public Optional<ByteString> open(@Nonnull ByteString nonce, @Nonnull ByteString ciphertext) {
+  public Optional<ByteString> open(ByteString nonce, ByteString ciphertext) {
     final byte[] in = ciphertext.toByteArray();
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
     final Poly1305 poly1305 = new Poly1305();
