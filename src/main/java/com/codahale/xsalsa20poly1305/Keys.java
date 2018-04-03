@@ -21,6 +21,10 @@ import org.bouncycastle.math.ec.rfc7748.X25519;
 
 /** Utility methods for generating XSalsa20Poly1305 keys. */
 public class Keys {
+
+  static final int KEY_LEN = 32;
+  private static final byte[] HSALSA20_SEED = new byte[16];
+
   private Keys() {
     // singleton
   }
@@ -31,7 +35,7 @@ public class Keys {
    * @return a 32-byte secret key
    */
   public static ByteString generateSecretKey() {
-    final byte[] k = new byte[32];
+    final byte[] k = new byte[KEY_LEN];
     final SecureRandom random = new SecureRandom();
     random.nextBytes(k);
     return ByteString.of(k);
@@ -57,7 +61,7 @@ public class Keys {
    * @return the public key matching {@code privateKey}
    */
   public static ByteString generatePublicKey(ByteString privateKey) {
-    final byte[] publicKey = new byte[32];
+    final byte[] publicKey = new byte[KEY_LEN];
     X25519.scalarMultBase(privateKey.toByteArray(), 0, publicKey, 0);
     return ByteString.of(publicKey);
   }
@@ -70,10 +74,10 @@ public class Keys {
    * @return a 32-byte secret key only re-calculable by the sender and recipient
    */
   public static ByteString sharedSecret(ByteString publicKey, ByteString privateKey) {
-    final byte[] s = new byte[32];
+    final byte[] s = new byte[KEY_LEN];
     X25519.scalarMult(privateKey.toByteArray(), 0, publicKey.toByteArray(), 0, s, 0);
-    final byte[] k = new byte[32];
-    HSalsa20.hsalsa20(k, new byte[16], s);
+    final byte[] k = new byte[KEY_LEN];
+    HSalsa20.hsalsa20(k, HSALSA20_SEED, s);
     return ByteString.of(k);
   }
 }

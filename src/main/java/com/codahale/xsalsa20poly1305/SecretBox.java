@@ -42,7 +42,7 @@ public class SecretBox {
    * @see Keys#generateSecretKey()
    */
   public SecretBox(ByteString secretKey) {
-    if (secretKey.size() != 32) {
+    if (secretKey.size() != Keys.KEY_LEN) {
       throw new IllegalArgumentException("secretKey must be 32 bytes long");
     }
     this.key = secretKey.toByteArray();
@@ -69,22 +69,23 @@ public class SecretBox {
    * @return the ciphertext
    */
   public ByteString seal(ByteString nonce, ByteString plaintext) {
-    // initialize XSalsa20
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
+    final Poly1305 poly1305 = new Poly1305();
+
+    // initialize XSalsa20
     xsalsa20.init(true, new ParametersWithIV(new KeyParameter(key), nonce.toByteArray()));
 
     // generate Poly1305 subkey
-    final byte[] sk = new byte[32];
-    xsalsa20.processBytes(sk, 0, 32, sk, 0);
+    final byte[] sk = new byte[Keys.KEY_LEN];
+    xsalsa20.processBytes(sk, 0, Keys.KEY_LEN, sk, 0);
 
     // encrypt plaintext
-    final byte[] out = new byte[plaintext.size() + 16];
-    xsalsa20.processBytes(plaintext.toByteArray(), 0, plaintext.size(), out, 16);
+    final byte[] out = new byte[plaintext.size() + poly1305.getMacSize()];
+    xsalsa20.processBytes(plaintext.toByteArray(), 0, plaintext.size(), out, poly1305.getMacSize());
 
     // hash ciphertext and prepend mac to ciphertext
-    final Poly1305 poly1305 = new Poly1305();
     poly1305.init(new KeyParameter(sk));
-    poly1305.update(out, 16, plaintext.size());
+    poly1305.update(out, poly1305.getMacSize(), plaintext.size());
     poly1305.doFinal(out, 0);
     return ByteString.of(out);
   }
@@ -108,19 +109,19 @@ public class SecretBox {
     xsalsa20.init(false, new ParametersWithIV(new KeyParameter(key), nonce.toByteArray()));
 
     // generate mac subkey
-    final byte[] sk = new byte[32];
+    final byte[] sk = new byte[Keys.KEY_LEN];
     xsalsa20.processBytes(sk, 0, sk.length, sk, 0);
 
     // hash ciphertext
     poly1305.init(new KeyParameter(sk));
-    final int len = Math.max(ciphertext.size() - 16, 0);
-    poly1305.update(in, 16, len);
-    final byte[] calculatedMAC = new byte[16];
+    final int len = Math.max(ciphertext.size() - poly1305.getMacSize(), 0);
+    poly1305.update(in, poly1305.getMacSize(), len);
+    final byte[] calculatedMAC = new byte[poly1305.getMacSize()];
     poly1305.doFinal(calculatedMAC, 0);
 
     // extract mac
-    final byte[] presentedMAC = new byte[16];
-    System.arraycopy(in, 0, presentedMAC, 0, Math.min(ciphertext.size(), 16));
+    final byte[] presentedMAC = new byte[poly1305.getMacSize()];
+    System.arraycopy(in, 0, presentedMAC, 0, Math.min(ciphertext.size(), poly1305.getMacSize()));
 
     // compare macs
     if (!MessageDigest.isEqual(calculatedMAC, presentedMAC)) {
@@ -129,7 +130,7 @@ public class SecretBox {
 
     // decrypt ciphertext
     final byte[] plaintext = new byte[len];
-    xsalsa20.processBytes(in, 16, plaintext.length, plaintext, 0);
+    xsalsa20.processBytes(in, poly1305.getMacSize(), plaintext.length, plaintext, 0);
     return Optional.of(ByteString.of(plaintext));
   }
 
