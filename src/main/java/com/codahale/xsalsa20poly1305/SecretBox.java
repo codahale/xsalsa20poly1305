@@ -17,8 +17,8 @@ package com.codahale.xsalsa20poly1305;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Optional;
-import okio.ByteString;
 import org.bouncycastle.crypto.digests.Blake2bDigest;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.macs.Poly1305;
@@ -41,11 +41,11 @@ public class SecretBox {
    * @param secretKey a 32-byte secret key
    * @see Keys#generateSecretKey()
    */
-  public SecretBox(ByteString secretKey) {
-    if (secretKey.size() != Keys.KEY_LEN) {
+  public SecretBox(byte[] secretKey) {
+    if (secretKey.length != Keys.KEY_LEN) {
       throw new IllegalArgumentException("secretKey must be 32 bytes long");
     }
-    this.key = secretKey.toByteArray();
+    this.key = Arrays.copyOf(secretKey, secretKey.length);
   }
 
   /**
@@ -55,39 +55,40 @@ public class SecretBox {
    * @param publicKey a Curve25519 public key
    * @param privateKey a Curve25519 private key
    * @see Keys#generatePrivateKey()
-   * @see Keys#generatePublicKey(ByteString)
+   * @see Keys#generatePublicKey(byte[])
    */
-  public SecretBox(ByteString publicKey, ByteString privateKey) {
+  public SecretBox(byte[] publicKey, byte[] privateKey) {
     this(Keys.sharedSecret(publicKey, privateKey));
   }
 
   /**
    * Encrypt a plaintext using the given key and nonce.
    *
-   * @param nonce a 24-byte nonce (cf. {@link #nonce(ByteString)}, {@link #nonce()})
+   * @param nonce a 24-byte nonce (cf. {@link #nonce(byte[])}, {@link #nonce()})
    * @param plaintext an arbitrary message
    * @return the ciphertext
    */
-  public ByteString seal(ByteString nonce, ByteString plaintext) {
+  public byte[] seal(byte[] nonce, byte[] plaintext) {
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
     final Poly1305 poly1305 = new Poly1305();
 
     // initialize XSalsa20
-    xsalsa20.init(true, new ParametersWithIV(new KeyParameter(key), nonce.toByteArray()));
+    xsalsa20.init(true, new ParametersWithIV(new KeyParameter(key), nonce));
 
     // generate Poly1305 subkey
     final byte[] sk = new byte[Keys.KEY_LEN];
     xsalsa20.processBytes(sk, 0, Keys.KEY_LEN, sk, 0);
 
     // encrypt plaintext
-    final byte[] out = new byte[plaintext.size() + poly1305.getMacSize()];
-    xsalsa20.processBytes(plaintext.toByteArray(), 0, plaintext.size(), out, poly1305.getMacSize());
+    final byte[] out = new byte[plaintext.length + poly1305.getMacSize()];
+    xsalsa20.processBytes(plaintext, 0, plaintext.length, out, poly1305.getMacSize());
 
     // hash ciphertext and prepend mac to ciphertext
     poly1305.init(new KeyParameter(sk));
-    poly1305.update(out, poly1305.getMacSize(), plaintext.size());
+    poly1305.update(out, poly1305.getMacSize(), plaintext.length);
     poly1305.doFinal(out, 0);
-    return ByteString.of(out);
+
+    return out;
   }
 
   /**
@@ -97,16 +98,15 @@ public class SecretBox {
    * @param ciphertext the encrypted message
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
    *     ciphertext was modified, an empty {@link Optional}
-   * @see #nonce(ByteString)
+   * @see #nonce(byte[])
    * @see #nonce()
    */
-  public Optional<ByteString> open(ByteString nonce, ByteString ciphertext) {
-    final byte[] in = ciphertext.toByteArray();
+  public Optional<byte[]> open(byte[] nonce, byte[] ciphertext) {
     final XSalsa20Engine xsalsa20 = new XSalsa20Engine();
     final Poly1305 poly1305 = new Poly1305();
 
     // initialize XSalsa20
-    xsalsa20.init(false, new ParametersWithIV(new KeyParameter(key), nonce.toByteArray()));
+    xsalsa20.init(false, new ParametersWithIV(new KeyParameter(key), nonce));
 
     // generate mac subkey
     final byte[] sk = new byte[Keys.KEY_LEN];
@@ -114,14 +114,15 @@ public class SecretBox {
 
     // hash ciphertext
     poly1305.init(new KeyParameter(sk));
-    final int len = Math.max(ciphertext.size() - poly1305.getMacSize(), 0);
-    poly1305.update(in, poly1305.getMacSize(), len);
+    final int len = Math.max(ciphertext.length - poly1305.getMacSize(), 0);
+    poly1305.update(ciphertext, poly1305.getMacSize(), len);
     final byte[] calculatedMAC = new byte[poly1305.getMacSize()];
     poly1305.doFinal(calculatedMAC, 0);
 
     // extract mac
     final byte[] presentedMAC = new byte[poly1305.getMacSize()];
-    System.arraycopy(in, 0, presentedMAC, 0, Math.min(ciphertext.size(), poly1305.getMacSize()));
+    System.arraycopy(
+        ciphertext, 0, presentedMAC, 0, Math.min(ciphertext.length, poly1305.getMacSize()));
 
     // compare macs
     if (!MessageDigest.isEqual(calculatedMAC, presentedMAC)) {
@@ -130,8 +131,8 @@ public class SecretBox {
 
     // decrypt ciphertext
     final byte[] plaintext = new byte[len];
-    xsalsa20.processBytes(in, poly1305.getMacSize(), plaintext.length, plaintext, 0);
-    return Optional.of(ByteString.of(plaintext));
+    xsalsa20.processBytes(ciphertext, poly1305.getMacSize(), plaintext.length, plaintext, 0);
+    return Optional.of(plaintext);
   }
 
   /**
@@ -139,16 +140,16 @@ public class SecretBox {
    *
    * <p><b>N.B.:</b> Use of this method is probably fine, but because an entropy-exhausted or
    * compromised {@link SecureRandom} provider might generate duplicate nonces (which would allow an
-   * attacker to potentially decrypt and even forge messages), {@link #nonce(ByteString)} is
-   * recommended instead.
+   * attacker to potentially decrypt and even forge messages), {@link #nonce(byte[])} is recommended
+   * instead.
    *
    * @return a 24-byte nonce
    */
-  public ByteString nonce() {
+  public byte[] nonce() {
     final byte[] nonce = new byte[NONCE_SIZE];
     final SecureRandom random = new SecureRandom();
     random.nextBytes(nonce);
-    return ByteString.of(nonce);
+    return nonce;
   }
 
   /**
@@ -169,7 +170,7 @@ public class SecretBox {
    * @param message the message to be encrypted
    * @return a 24-byte nonce
    */
-  public ByteString nonce(ByteString message) {
+  public byte[] nonce(byte[] message) {
     final byte[] n1 = new byte[16];
     final byte[] n2 = new byte[16];
     final SecureRandom random = new SecureRandom();
@@ -177,10 +178,10 @@ public class SecretBox {
     random.nextBytes(n2);
 
     final Blake2bDigest blake2b = new Blake2bDigest(key, NONCE_SIZE, n1, n2);
-    blake2b.update(message.toByteArray(), message.size(), 0);
+    blake2b.update(message, message.length, 0);
 
     final byte[] nonce = new byte[NONCE_SIZE];
     blake2b.doFinal(nonce, 0);
-    return ByteString.of(nonce);
+    return nonce;
   }
 }

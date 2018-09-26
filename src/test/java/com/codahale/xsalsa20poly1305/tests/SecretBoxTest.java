@@ -15,19 +15,19 @@
  */
 package com.codahale.xsalsa20poly1305.tests;
 
-import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
+import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.codahale.xsalsa20poly1305.Keys;
 import com.codahale.xsalsa20poly1305.SecretBox;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import okio.ByteString;
 import org.abstractj.kalium.crypto.Box;
 import org.junit.jupiter.api.Test;
 import org.quicktheories.WithQuickTheories;
@@ -36,7 +36,7 @@ class SecretBoxTest implements WithQuickTheories {
 
   @Test
   void shortKey() {
-    qt().forAll(byteStrings(1, 31))
+    qt().forAll(byteArrays(1, 31))
         .checkAssert(
             key ->
                 assertThatThrownBy(() -> new SecretBox(key))
@@ -47,43 +47,47 @@ class SecretBoxTest implements WithQuickTheories {
   void roundTrip() {
     qt().withExamples(1)
         .withShrinkCycles(1)
-        .forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
+        .forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
         .check(
             (key, nonce, message) -> {
               final SecretBox box = new SecretBox(key);
-              return box.open(nonce, box.seal(nonce, message)).map(message::equals).orElse(false);
+              return box.open(nonce, box.seal(nonce, message))
+                  .map(a -> Arrays.equals(message, a))
+                  .orElse(false);
             });
   }
 
   @Test
   void pkRoundTrip() {
-    qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
+    qt().forAll(privateKeys(), privateKeys(), byteArrays(24, 24), byteArrays(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
-              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
+              final byte[] publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final byte[] publicKeyB = Keys.generatePublicKey(privateKeyB);
               final SecretBox boxA = new SecretBox(publicKeyB, privateKeyA);
               final SecretBox boxB = new SecretBox(publicKeyA, privateKeyB);
-              return boxB.open(nonce, boxA.seal(nonce, message)).map(message::equals).orElse(false);
+              return boxB.open(nonce, boxA.seal(nonce, message))
+                  .map(b -> Arrays.equals(message, b))
+                  .orElse(false);
             });
   }
 
   @Test
   void badKey() {
-    qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096), byteStrings(32, 32))
-        .assuming((keyA, nonce, message, keyB) -> !keyA.equals(keyB))
+    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096), byteArrays(32, 32))
+        .assuming((keyA, nonce, message, keyB) -> !Arrays.equals(keyA, keyB))
         .check(
             (keyA, nonce, message, keyB) -> {
-              final ByteString ciphertext = new SecretBox(keyA).seal(nonce, message);
-              final Optional<ByteString> plaintext = new SecretBox(keyB).open(nonce, ciphertext);
+              final byte[] ciphertext = new SecretBox(keyA).seal(nonce, message);
+              final Optional<byte[]> plaintext = new SecretBox(keyB).open(nonce, ciphertext);
               return !plaintext.isPresent();
             });
   }
 
   @Test
   void badNonce() {
-    qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096), byteStrings(24, 24))
-        .assuming((key, nonceA, message, nonceB) -> !nonceA.equals(nonceB))
+    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096), byteArrays(24, 24))
+        .assuming((key, nonceA, message, nonceB) -> !Arrays.equals(nonceA, nonceB))
         .check(
             (key, nonceA, message, nonceB) -> {
               final SecretBox box = new SecretBox(key);
@@ -94,99 +98,93 @@ class SecretBoxTest implements WithQuickTheories {
   @Test
   void badCiphertext() {
     qt().forAll(
-            byteStrings(32, 32),
-            byteStrings(24, 24),
-            byteStrings(1, 4096),
-            integers().allPositive())
+            byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096), integers().allPositive())
         .check(
             (key, nonce, message, v) -> {
               final SecretBox box = new SecretBox(key);
-              final byte[] ciphertext = box.seal(nonce, message).toByteArray();
+              final byte[] ciphertext = box.seal(nonce, message);
               // flip a single random bit of plaintext
               byte mask = (byte) (1 << (v % 8));
               if (mask == 0) {
                 mask = 1;
               }
               ciphertext[v % ciphertext.length] ^= mask;
-              return !box.open(nonce, ByteString.of(ciphertext)).isPresent();
+              return !box.open(nonce, ciphertext).isPresent();
             });
   }
 
   @Test
   void randomNonce() {
-    final SecretBox box = new SecretBox(ByteString.of(new byte[32]));
-    final List<ByteString> nonces =
+    final SecretBox box = new SecretBox(new byte[32]);
+    final List<byte[]> nonces =
         IntStream.range(0, 1000).mapToObj(i -> box.nonce()).collect(Collectors.toList());
     qt().forAll(integers().between(1, 1000), integers().between(1, 1000))
         .assuming((x, y) -> !Objects.equals(x, y))
-        .check((x, y) -> !nonces.get(x - 1).equals(nonces.get(y - 1)));
-    qt().forAll(integers().all()).check(i -> box.nonce().size() == 24);
+        .check((x, y) -> !Arrays.equals(nonces.get(x - 1), nonces.get(y - 1)));
+    qt().forAll(integers().all()).check(i -> box.nonce().length == 24);
   }
 
   @Test
   void misuseResistantNonce() {
-    qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
+    qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
         .check(
             (key, message) -> {
               final SecretBox box = new SecretBox(key);
-              return box.nonce(message).size() == 24;
+              return box.nonce(message).length == 24;
             });
   }
 
   @Test
   void fromUsToLibSodium() {
-    qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
+    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
         .check(
             (key, nonce, message) -> {
-              final ByteString c = new SecretBox(key).seal(nonce, message);
+              final byte[] c = new SecretBox(key).seal(nonce, message);
               final org.abstractj.kalium.crypto.SecretBox theirBox =
-                  new org.abstractj.kalium.crypto.SecretBox(key.toByteArray());
-              final Optional<byte[]> p =
-                  tryTo(() -> theirBox.decrypt(nonce.toByteArray(), c.toByteArray()));
-              return p.map(ByteString::of).map(message::equals).orElse(false);
+                  new org.abstractj.kalium.crypto.SecretBox(key);
+              final Optional<byte[]> p = tryTo(() -> theirBox.decrypt(nonce, c));
+              return p.map(a -> Arrays.equals(message, a)).orElse(false);
             });
   }
 
   @Test
   void fromLibSodiumToUs() {
-    qt().forAll(byteStrings(32, 32), byteStrings(24, 24), byteStrings(1, 4096))
+    qt().forAll(byteArrays(32, 32), byteArrays(24, 24), byteArrays(1, 4096))
         .check(
             (key, nonce, message) -> {
               final byte[] c =
-                  new org.abstractj.kalium.crypto.SecretBox(key.toByteArray())
-                      .encrypt(nonce.toByteArray(), message.toByteArray());
-              final Optional<ByteString> p = new SecretBox(key).open(nonce, ByteString.of(c));
-              return p.map(message::equals).orElse(false);
+                  new org.abstractj.kalium.crypto.SecretBox(key).encrypt(nonce, message);
+              final Optional<byte[]> p = new SecretBox(key).open(nonce, c);
+              return p.map(a -> Arrays.equals(message, a)).orElse(false);
             });
   }
 
   @Test
   void pkFromUsToLibSodium() {
-    qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
+    qt().forAll(privateKeys(), privateKeys(), byteArrays(24, 24), byteArrays(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
-              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
+              final byte[] publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final byte[] publicKeyB = Keys.generatePublicKey(privateKeyB);
               final SecretBox ourBox = new SecretBox(publicKeyB, privateKeyA);
-              final ByteString c = ourBox.seal(nonce, message);
-              final Box theirBox = new Box(publicKeyA.toByteArray(), privateKeyB.toByteArray());
-              final Optional<byte[]> p =
-                  tryTo(() -> theirBox.decrypt(nonce.toByteArray(), c.toByteArray()));
-              return p.map(ByteString::of).map(message::equals).orElse(false);
+              final byte[] c = ourBox.seal(nonce, message);
+              final Box theirBox = new Box(publicKeyA, privateKeyB);
+              final Optional<byte[]> p = tryTo(() -> theirBox.decrypt(nonce, c));
+              return p.map(a -> Arrays.equals(message, a)).orElse(false);
             });
   }
 
   @Test
   void pkFromLibSodiumToUs() {
-    qt().forAll(privateKeys(), privateKeys(), byteStrings(24, 24), byteStrings(1, 4096))
+    qt().forAll(privateKeys(), privateKeys(), byteArrays(24, 24), byteArrays(1, 4096))
         .check(
             (privateKeyA, privateKeyB, nonce, message) -> {
-              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
-              final Box theirBox = new Box(publicKeyB.toByteArray(), privateKeyA.toByteArray());
-              final byte[] c = theirBox.encrypt(nonce.toByteArray(), message.toByteArray());
+              final byte[] publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final byte[] publicKeyB = Keys.generatePublicKey(privateKeyB);
+              final Box theirBox = new Box(publicKeyB, privateKeyA);
+              final byte[] c = theirBox.encrypt(nonce, message);
               final SecretBox ourBox = new SecretBox(publicKeyA, privateKeyB);
-              return ourBox.open(nonce, ByteString.of(c)).map(message::equals).orElse(false);
+              return ourBox.open(nonce, c).map(a -> Arrays.equals(message, a)).orElse(false);
             });
   }
 

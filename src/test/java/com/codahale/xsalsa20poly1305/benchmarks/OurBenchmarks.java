@@ -19,7 +19,6 @@ import com.codahale.xsalsa20poly1305.SecretBox;
 import com.codahale.xsalsa20poly1305.SimpleBox;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import okio.ByteString;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -36,30 +35,30 @@ public class OurBenchmarks {
   @Param({"100", "1024", "10240"})
   private int size = 100;
 
-  private final SecretBox box = new SecretBox(ByteString.of(new byte[32]));
-  private final SimpleBox simpleBox = new SimpleBox(ByteString.of(new byte[32]));
-  private final ByteString nonce = ByteString.of(new byte[24]);
-  private final ByteString plaintext = ByteString.of(new byte[size]);
-  private final ByteString boxCiphertext = box.seal(nonce, plaintext);
-  private final ByteString simpleCiphertext = simpleBox.seal(plaintext);
+  private final SecretBox box = new SecretBox(new byte[32]);
+  private final SimpleBox simpleBox = new SimpleBox(new byte[32]);
+  private final byte[] nonce = new byte[24];
+  private final byte[] plaintext = new byte[size];
+  private final byte[] boxCiphertext = box.seal(nonce, plaintext);
+  private final byte[] simpleCiphertext = simpleBox.seal(plaintext);
 
   @Benchmark
-  public ByteString seal() {
+  public byte[] seal() {
     return box.seal(nonce, plaintext);
   }
 
   @Benchmark
-  public Optional<ByteString> open() {
+  public Optional<byte[]> open() {
     return box.open(nonce, boxCiphertext);
   }
 
   @Benchmark
-  public ByteString simpleSeal() {
+  public byte[] simpleSeal() {
     return simpleBox.seal(plaintext);
   }
 
   @Benchmark
-  public Optional<ByteString> simpleOpen() {
+  public Optional<byte[]> simpleOpen() {
     return simpleBox.open(simpleCiphertext);
   }
 }

@@ -15,42 +15,44 @@
  */
 package com.codahale.xsalsa20poly1305.tests;
 
-import static com.codahale.xsalsa20poly1305.tests.Generators.byteStrings;
+import static com.codahale.xsalsa20poly1305.tests.Generators.byteArrays;
 import static com.codahale.xsalsa20poly1305.tests.Generators.privateKeys;
 
 import com.codahale.xsalsa20poly1305.Keys;
 import com.codahale.xsalsa20poly1305.SimpleBox;
-import okio.ByteString;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.quicktheories.WithQuickTheories;
 
 class SimpleBoxTest implements WithQuickTheories {
   @Test
   void roundTrip() {
-    qt().forAll(byteStrings(32, 32), byteStrings(1, 4096))
+    qt().forAll(byteArrays(32, 32), byteArrays(1, 4096))
         .check(
             (key, message) -> {
               final SimpleBox box = new SimpleBox(key);
-              return box.open(box.seal(message)).map(message::equals).orElse(false);
+              return box.open(box.seal(message)).map(a -> Arrays.equals(message, a)).orElse(false);
             });
   }
 
   @Test
   void pkRoundTrip() {
-    qt().forAll(privateKeys(), privateKeys(), byteStrings(1, 4096))
+    qt().forAll(privateKeys(), privateKeys(), byteArrays(1, 4096))
         .check(
             (privateKeyA, privateKeyB, message) -> {
-              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
+              final byte[] publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final byte[] publicKeyB = Keys.generatePublicKey(privateKeyB);
               final SimpleBox boxA = new SimpleBox(publicKeyB, privateKeyA);
               final SimpleBox boxB = new SimpleBox(publicKeyA, privateKeyB);
-              return boxB.open(boxA.seal(message)).map(message::equals).orElse(false);
+              return boxB.open(boxA.seal(message))
+                  .map(a -> Arrays.equals(message, a))
+                  .orElse(false);
             });
   }
 
   @Test
   void shortMessage() {
-    qt().forAll(byteStrings(32, 32), byteStrings(1, 24))
+    qt().forAll(byteArrays(32, 32), byteArrays(1, 24))
         .check((key, message) -> !new SimpleBox(key).open(message).isPresent());
   }
 }

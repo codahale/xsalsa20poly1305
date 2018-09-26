@@ -20,7 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.codahale.xsalsa20poly1305.Keys;
 import com.codahale.xsalsa20poly1305.SecretBox;
-import okio.ByteString;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.quicktheories.WithQuickTheories;
 
@@ -28,19 +29,19 @@ class KeysTest implements WithQuickTheories {
 
   @Test
   void generateSecretKey() {
-    final ByteString message = ByteString.encodeUtf8("this is a test");
-    final ByteString key = Keys.generateSecretKey();
+    final byte[] message = "this is a test".getBytes(StandardCharsets.UTF_8);
+    final byte[] key = Keys.generateSecretKey();
     final SecretBox box = new SecretBox(key);
-    final ByteString n = box.nonce(message);
+    final byte[] n = box.nonce(message);
     assertThat(box.open(n, box.seal(n, message))).contains(message);
   }
 
   @Test
   void generateKeyPair() {
-    final ByteString privateKeyA = Keys.generatePrivateKey();
-    final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
-    final ByteString privateKeyB = Keys.generatePrivateKey();
-    final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
+    final byte[] privateKeyA = Keys.generatePrivateKey();
+    final byte[] publicKeyA = Keys.generatePublicKey(privateKeyA);
+    final byte[] privateKeyB = Keys.generatePrivateKey();
+    final byte[] publicKeyB = Keys.generatePublicKey(privateKeyB);
 
     assertThat(Keys.sharedSecret(publicKeyB, privateKeyA))
         .isEqualTo(Keys.sharedSecret(publicKeyA, privateKeyB));
@@ -51,13 +52,13 @@ class KeysTest implements WithQuickTheories {
     qt().forAll(privateKeys(), privateKeys())
         .check(
             (privateKeyA, privateKeyB) -> {
-              final ByteString publicKeyA = Keys.generatePublicKey(privateKeyA);
-              final ByteString publicKeyB = Keys.generatePublicKey(privateKeyB);
+              final byte[] publicKeyA = Keys.generatePublicKey(privateKeyA);
+              final byte[] publicKeyB = Keys.generatePublicKey(privateKeyB);
 
-              final ByteString secretAB = Keys.sharedSecret(publicKeyA, privateKeyB);
-              final ByteString secretBA = Keys.sharedSecret(publicKeyB, privateKeyA);
+              final byte[] secretAB = Keys.sharedSecret(publicKeyA, privateKeyB);
+              final byte[] secretBA = Keys.sharedSecret(publicKeyB, privateKeyA);
 
-              return secretAB.equals(secretBA);
+              return Arrays.equals(secretAB, secretBA);
             });
   }
 }

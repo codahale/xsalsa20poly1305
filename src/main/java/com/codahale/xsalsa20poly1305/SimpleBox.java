@@ -15,9 +15,8 @@
  */
 package com.codahale.xsalsa20poly1305;
 
+import java.util.Arrays;
 import java.util.Optional;
-import okio.Buffer;
-import okio.ByteString;
 
 /**
  * Convenience functions for encryption without requiring nonce management.
@@ -33,7 +32,7 @@ public class SimpleBox {
    *
    * @param secretKey a 32-byte secret key
    */
-  public SimpleBox(ByteString secretKey) {
+  public SimpleBox(byte[] secretKey) {
     this.box = new SecretBox(secretKey);
   }
 
@@ -44,7 +43,7 @@ public class SimpleBox {
    * @param publicKey a Curve25519 public key
    * @param privateKey a Curve25519 private key
    */
-  public SimpleBox(ByteString publicKey, ByteString privateKey) {
+  public SimpleBox(byte[] publicKey, byte[] privateKey) {
     this.box = new SecretBox(publicKey, privateKey);
   }
 
@@ -54,10 +53,13 @@ public class SimpleBox {
    * @param plaintext any arbitrary bytes
    * @return the ciphertext
    */
-  public ByteString seal(ByteString plaintext) {
-    final ByteString nonce = box.nonce(plaintext);
-    final ByteString ciphertext = box.seal(nonce, plaintext);
-    return new Buffer().write(nonce).write(ciphertext).readByteString();
+  public byte[] seal(byte[] plaintext) {
+    final byte[] nonce = box.nonce(plaintext);
+    final byte[] ciphertext = box.seal(nonce, plaintext);
+    final byte[] combined = new byte[nonce.length + ciphertext.length];
+    System.arraycopy(nonce, 0, combined, 0, nonce.length);
+    System.arraycopy(ciphertext, 0, combined, nonce.length, ciphertext.length);
+    return combined;
   }
 
   /**
@@ -67,12 +69,12 @@ public class SimpleBox {
    * @return an {@link Optional} of the original plaintext, or if either the key, nonce, or
    *     ciphertext was modified, an empty {@link Optional}
    */
-  public Optional<ByteString> open(ByteString ciphertext) {
-    if (ciphertext.size() < SecretBox.NONCE_SIZE) {
+  public Optional<byte[]> open(byte[] ciphertext) {
+    if (ciphertext.length < SecretBox.NONCE_SIZE) {
       return Optional.empty();
     }
-    final ByteString nonce = ciphertext.substring(0, SecretBox.NONCE_SIZE);
-    final ByteString x = ciphertext.substring(SecretBox.NONCE_SIZE, ciphertext.size());
+    final byte[] nonce = Arrays.copyOfRange(ciphertext, 0, SecretBox.NONCE_SIZE);
+    final byte[] x = Arrays.copyOfRange(ciphertext, SecretBox.NONCE_SIZE, ciphertext.length);
     return box.open(nonce, x);
   }
 }

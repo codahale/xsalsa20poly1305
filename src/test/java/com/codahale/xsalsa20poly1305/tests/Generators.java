@@ -16,8 +16,6 @@
 package com.codahale.xsalsa20poly1305.tests;
 
 import java.util.Arrays;
-import java.util.function.Function;
-import okio.ByteString;
 import org.quicktheories.core.Gen;
 import org.quicktheories.impl.Constraint;
 
@@ -35,18 +33,14 @@ public interface Generators {
     return gen.describedAs(Arrays::toString);
   }
 
-  static Gen<ByteString> byteStrings(int minLength, int maxLength) {
-    return byteArrays(minLength, maxLength).map((Function<byte[], ByteString>) ByteString::of);
-  }
-
-  static Gen<ByteString> privateKeys() {
+  static Gen<byte[]> privateKeys() {
     return byteArrays(32, 32).map(Generators::clamp);
   }
 
-  static ByteString clamp(byte[] privateKey) {
+  static byte[] clamp(byte[] privateKey) {
     privateKey[0] &= (byte) 248;
     privateKey[31] &= (byte) 127;
     privateKey[31] |= (byte) 64;
-    return ByteString.of(privateKey);
+    return privateKey;
   }
 }
