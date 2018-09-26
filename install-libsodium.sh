@@ -33,3 +33,4 @@ if [ ! -d "$HOME/libsodium/lib" ]; then
 else
   echo 'Using cached directory.'
 fi
+export LD_LIBRARY_PATH=$HOME/libsodium/lib:$LD_LIBRARY_PATH
