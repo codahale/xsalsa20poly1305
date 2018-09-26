@@ -12,66 +12,68 @@ construction, which automatically manages nonces for you in a misuse-resistant f
 <dependency>
   <groupId>com.codahale</groupId>
   <artifactId>xsalsa20poly1305</artifactId>
-  <version>0.10.1</version>
+  <version>0.11.0</version>
 </dependency>
 ```
+
+*Note: module name for Java 9+ is `com.codahale.xsalsa20poly1305`.*
 
 It depends on Bouncy Castle for Salsa20, XSalsa20, Poly1305, and X25519 implementations.
 
 ## Examples
 
 ```java
+import java.nio.charset.StandardCharsets;
 import com.codahale.xsalsa20poly1305.Keys;
 import com.codahale.xsalsa20poly1305.SimpleBox;
-import okio.ByteString;
 
 class Examples {
   void asymmetricEncryption() {
     // Alice has a key pair
-    final ByteString alicePrivateKey = Keys.generatePrivateKey();
-    final ByteString alicePublicKey = Keys.generatePublicKey(alicePrivateKey);
+    final byte[] alicePrivateKey = Keys.generatePrivateKey();
+    final byte[] alicePublicKey = Keys.generatePublicKey(alicePrivateKey);
     
     // Bob also has a key pair
-    final ByteString bobPrivateKey = Keys.generatePrivateKey();
-    final ByteString bobPublicKey = Keys.generatePublicKey(bobPrivateKey);
+    final byte[] bobPrivateKey = Keys.generatePrivateKey();
+    final byte[] bobPublicKey = Keys.generatePublicKey(bobPrivateKey);
     
     // Bob and Alice exchange public keys. (Not pictured.)
     
     // Bob wants to send Alice a very secret message. 
-    final ByteString message = ByteString.encodeUtf8("this is very secret");
+    final byte[] message = "this is very secret".getBytes(StandardCharsets.UTF_8);
     
     // Bob encrypts the message using Alice's public key and his own private key
     final SimpleBox bobBox = new SimpleBox(alicePublicKey, bobPrivateKey);
-    final ByteString ciphertext = bobBox.seal(message);
+    final byte[] ciphertext = bobBox.seal(message);
     
     // Bob sends Alice this ciphertext. (Not pictured.)
     
     // Alice decrypts the message using Bob's public key and her own private key.
     final SimpleBox aliceBox = new SimpleBox(bobPublicKey, alicePrivateKey);
-    final ByteString plaintext = aliceBox.open(ciphertext);
+    final byte[] plaintext = aliceBox.open(ciphertext);
     
     // Now Alice has the message!
-    System.out.println(plaintext);
+    System.out.println(new String(plaintext, StandardCharsets.UTF_8));
   }
  
   void symmetricEncryption() {
     // There is a single secret key.
-    final ByteString secretKey = Keys.generateSecretKey();  
+    final byte[] secretKey = Keys.generateSecretKey();  
    
     // And you want to use it to store a very secret message.
-    final ByteString message = ByteString.encodeUtf8("this is very secret");
+    final byte[] message = "this is very secret".getBytes(StandardCharsets.UTF_8);
    
     // So you encrypt it.
     final SimpleBox box = new SimpleBox(secretKey);
-    final ByteString ciphertext = box.seal(message);
+    final byte[] ciphertext = box.seal(message);
     
     // And you store it. (Not pictured.)
     
     // And then you decrypt it later.
-    final ByteString plaintext = box.open(ciphertext);
+    final byte[] plaintext = box.open(ciphertext);
     
     // Now you have the message again!
-    System.out.println(plaintext);
+    System.out.println(new String(plaintext, StandardCharsets.UTF_8));
   }
   
   // There is also SecretBox, which behaves much like SimpleBox but requires you to manage your own
@@ -95,7 +97,7 @@ should be safe to use. But because of the downside risk of nonce misuse, this li
 secondary function for generating misuse-resistant nonces: `SecretBox#nonce()`, which requires the
 message the nonce will be used to encrypt.
 
-`SecretBox#nonce(ByteString)` uses the BLAKE2b hash algorithm, keyed with the given key and using
+`SecretBox#nonce(byte[])` uses the BLAKE2b hash algorithm, keyed with the given key and using
 randomly-generated 128-bit salt and personalization parameters. If the local `SecureRandom`
 implementation is functional, the hash algorithm mixes those 256 bits of entropy along with the key
 and message to produce a 192-bit nonce, which will have the same chance of collision as
@@ -106,7 +108,7 @@ this event, using `SecretBox#nonce()` to encrypt messages will be deterministic 
 messages will produce duplicate ciphertexts, and this will be observable to any attackers.
 
 Because of the catastrophic downside risk of nonce reuse, the `SimpleBox` functions use
-`SecretBox#nonce(ByteString)` to generate nonces.
+`SecretBox#nonce(byte[])` to generate nonces.
 
 ## Performance
 

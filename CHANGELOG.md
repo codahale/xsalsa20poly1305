@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.11.0: 2018-09-26
+
+* Switched from `ByteString`-based API to a `byte[]`-based API.
+* Upgraded Bouncy Castle.
+* Added automatic module name.
+* Dropped JSR-305 annotation dependency.
+
 ## v0.10.1: 2018-03-20
 
 * Minor optimizations for HSalsa20 transform.
