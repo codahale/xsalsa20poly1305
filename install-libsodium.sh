@@ -30,6 +30,7 @@ if [ ! -d "$HOME/libsodium/lib" ]; then
   ./configure --prefix="$HOME/libsodium" --enable-minimal
   make
   make install
+  cd ..
   rm -rf ./libsodium-*
 else
   echo 'Using cached directory.'
