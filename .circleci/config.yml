@@ -29,8 +29,8 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
+      - run: apt-get update && apt-get install libsodium
       - run: mvn dependency:go-offline
-      - run: ./install-libsodium.sh
       - save_cache:
           paths:
             - ~/.m2
