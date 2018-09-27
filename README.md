@@ -115,27 +115,25 @@ Because of the catastrophic downside risk of nonce reuse, the `SimpleBox` functi
 Plenty fast.
 
 ```
-Benchmark                 (size)  Mode  Cnt      Score     Error  Units
-KaliumBenchmarks.decrypt     100  avgt   20   1793.539 ± 124.656  ns/op
-KaliumBenchmarks.decrypt    1024  avgt   20   1473.534 ±  34.491  ns/op
-KaliumBenchmarks.decrypt   10240  avgt   20   1440.947 ±  27.825  ns/op
-KaliumBenchmarks.encrypt     100  avgt   20   1178.445 ±  29.802  ns/op
-KaliumBenchmarks.encrypt    1024  avgt   20   1168.267 ±  28.839  ns/op
-KaliumBenchmarks.encrypt   10240  avgt   20   1168.010 ±  17.696  ns/op
-
-OurBenchmarks.open           100  avgt   20   1421.482 ±  22.579  ns/op
-OurBenchmarks.open          1024  avgt   20   1434.875 ±  38.469  ns/op
-OurBenchmarks.open         10240  avgt   20   1384.131 ±  37.711  ns/op
-OurBenchmarks.seal           100  avgt   20   1445.086 ±  26.644  ns/op
-OurBenchmarks.seal          1024  avgt   20   1516.173 ±  33.377  ns/op
-OurBenchmarks.seal         10240  avgt   20   1444.614 ±  33.779  ns/op
-
-OurBenchmarks.simpleOpen     100  avgt   20   1433.761 ±  38.734  ns/op
-OurBenchmarks.simpleOpen    1024  avgt   20   1434.190 ±  19.630  ns/op
-OurBenchmarks.simpleOpen   10240  avgt   20   1427.694 ±  47.438  ns/op
-OurBenchmarks.simpleSeal     100  avgt   20  10559.574 ± 331.472  ns/op
-OurBenchmarks.simpleSeal    1024  avgt   20  10911.187 ± 251.743  ns/op
-OurBenchmarks.simpleSeal   10240  avgt   20  10830.519 ± 218.606  ns/op
+Benchmark                 (size)  Mode  Cnt     Score     Error  Units
+KaliumBenchmarks.decrypt     100  avgt    5  1514.807 ±  22.722  ns/op
+KaliumBenchmarks.decrypt    1024  avgt    5  1522.446 ±  39.799  ns/op
+KaliumBenchmarks.decrypt   10240  avgt    5  1523.473 ±  57.312  ns/op
+KaliumBenchmarks.encrypt     100  avgt    5  1257.149 ±  37.157  ns/op
+KaliumBenchmarks.encrypt    1024  avgt    5  1254.206 ±  37.659  ns/op
+KaliumBenchmarks.encrypt   10240  avgt    5  1252.768 ±  19.789  ns/op
+OurBenchmarks.open           100  avgt    5  1247.329 ±  29.835  ns/op
+OurBenchmarks.open          1024  avgt    5  1198.329 ±  28.937  ns/op
+OurBenchmarks.open         10240  avgt    5  1282.656 ± 118.296  ns/op
+OurBenchmarks.seal           100  avgt    5  1120.629 ±  44.919  ns/op
+OurBenchmarks.seal          1024  avgt    5  1239.287 ±  12.169  ns/op
+OurBenchmarks.seal         10240  avgt    5  1112.890 ±  23.699  ns/op
+OurBenchmarks.simpleOpen     100  avgt    5  1269.132 ±  10.512  ns/op
+OurBenchmarks.simpleOpen    1024  avgt    5  1297.270 ±  15.052  ns/op
+OurBenchmarks.simpleOpen   10240  avgt    5  1288.875 ±  21.530  ns/op
+OurBenchmarks.simpleSeal     100  avgt    5  7165.066 ± 155.023  ns/op
+OurBenchmarks.simpleSeal    1024  avgt    5  7062.841 ± 182.324  ns/op
+OurBenchmarks.simpleSeal   10240  avgt    5  7545.090 ± 540.043  ns/op
 ```
 
 ## License
