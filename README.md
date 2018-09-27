@@ -1,6 +1,6 @@
 # XSalsa20Poly1305
 
-[![Build Status](https://secure.travis-ci.org/codahale/xsalsa20poly1305.svg)](http://travis-ci.org/codahale/xsalsa20poly1305)
+[![CircleCI](https://circleci.com/gh/codahale/xsalsa20poly1305.svg?style=svg)](https://circleci.com/gh/codahale/xsalsa20poly1305)
 
 A pure Java library which provides symmetric and asymmetric encryption compatible with DJB's NaCl
 library and its variants (e.g. libsodium). Also includes a class compatible with RbNaCl's SimpleBox
