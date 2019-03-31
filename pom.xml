@@ -45,7 +45,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.60</version>
+      <version>1.61</version>
     </dependency>
     <!-- compatible libraries for interoperability tests -->
     <dependency>
