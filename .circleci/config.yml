@@ -18,7 +18,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: maven:3-jdk-12
+      - image: maven:3-jdk-12-alpine
     working_directory: ~/repo
     environment:
       MAVEN_OPTS: -Xmx3200m
@@ -29,7 +29,7 @@ jobs:
           - v1-dependencies-{{ checksum ".circleci/config.yml" }}-{{ checksum "pom.xml" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-      - run: sudo apt-get update && sudo apt-get install -y libsodium23
+      - run: apk add libsodium
       - run: mvn clean verify
       - save_cache:
           paths:
