@@ -29,6 +29,7 @@ jobs:
           - v1-dependencies-{{ checksum ".circleci/config.yml" }}-{{ checksum "pom.xml" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
+      - run: sudo apt-get update && sudo apt-get install -y libsodium23
       - run: mvn clean verify
       - save_cache:
           paths:
